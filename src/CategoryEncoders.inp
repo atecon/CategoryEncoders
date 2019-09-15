@@ -251,11 +251,13 @@ function matrix tall_svd (const matrix X, matrix *U, matrix *V)
 end function
 
 
-function void check_series_g_isdiscrete (const series G "Discrete grouping series")
+function scalar check_series_g_isdiscrete (const series G "Discrete grouping series")
     /* Check whether grouping series G is discrete. */
     if !isdiscrete(G)
-        funcerr "Error: Input series %s is not discrete\n", argname(G)
+        printf "Error: Input series %s is not discrete\n", argname(G)
+        return 0
     endif    
+    return 1
 end function
 
 function void check_num_components (const list X, const int num_components)
