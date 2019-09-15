@@ -1,0 +1,43 @@
+clear
+set verbose off
+
+if $sysinfo.hostname == "at" || $sysinfo.hostname == "atdesktop"
+    string DIR_WORK = "/home/at/git/CategoryEncoders"
+elif $sysinfo.hostname == "dsb"
+    string DIR_WORK = "/home/ninja/repo/CategoryEncoders"
+endif
+
+include "@DIR_WORK/src/CategoryEncoders.inp" --force
+
+open nc_crime.gdt -q --preserve
+
+series target = prbconv
+
+# Cross-sectional grouping variable
+series unit = urban
+
+# List of regressors
+list Xbase = density wcon
+
+# Mean encoding
+list Xpmean = means_encode(Xbase, unit)
+Xpmean
+
+# Median encoding
+list Xpmedian = median_encode(Xbase, unit)
+Xpmedian
+
+# PCA encoding
+#-------------
+list Xpca = pca_encode(Xbase, unit)			# means_encoding done internally
+Xpca
+
+# SVD encoding
+list Xsvd = low_rank_encode(Xbase, unit)
+Xsvd
+
+# Multinomial logistic regression coefficients (excluding intercept which is used for estimation)
+list Xmnl = mnl_encode(Xbase, unit, 1)
+Xmnl
+
+
