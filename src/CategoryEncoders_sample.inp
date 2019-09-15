@@ -15,9 +15,16 @@ series target = prbconv
 
 # Cross-sectional grouping variable
 series unit = urban
+setinfo unit --discrete
 
 # List of regressors
 list Xbase = density wcon
+
+
+list OHE = ohe_encode(unit)
+OHE
+stop
+
 
 # Mean encoding
 list Xpmean = means_encode(Xbase, unit)

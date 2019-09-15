@@ -1,6 +1,25 @@
 # https://github.com/grf-labs/sufrep
 
 
+function list ohe_encode (const series G "Holding group IDs",
+                          const bool drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
+                          const bool verbose[0] "Print details")
+    /* One-hot encoding aka 'dummification' of categorical variable */
+    
+
+    list R = null
+
+    string to_be_droppped = ""
+    to_be_droppped = (drop==1) ? "--drop-first" : to_be_droppped
+    to_be_droppped = (drop==2) ? "--drop-last" : to_be_droppped
+    
+    dummify G @to_be_droppped
+    list R += D*
+    
+    return R
+end function
+
+
 function list means_or_median_encode (const list X "Exogenous regressors",
                                       const series G "Holding group IDs",
                                       const bool use_median[0] "Median instead of mean encoding",
@@ -43,9 +62,9 @@ end function
 
 
 function series series_with_groupwise_stats (const series X "Exogenous regressors",
-                                       const series G "Holding group IDs",
-                                       const string operation "E.g. 'mean', 'sd' etc.",
-                                       const bool verbose[0])
+                                             const series G "Holding group IDs",
+                                             const string operation "E.g. 'mean', 'sd' etc.",
+                                             const bool verbose[0])
     /* Helper function for grouping series X by G, computing group-wise
        statistics. Group-wise stats are imposed as values for constructing
     a series */
@@ -55,10 +74,10 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
     series R = NA
     loop i=1..rows(groups) -q
         catch smpl G==groups[i] --restrict --replace --quiet
-        if $error 
+        if $error
             if verbose
                 printf "\nWarning: No observations exist for group G=%d\n", groups[i]
-            endif            
+            endif
             return R
         endif
         series R = agg[i,3]
@@ -69,23 +88,23 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
 end function
 
 function series series_with_groupwise_values (const series G,
-                                               const matrix V "Column vector of G scalar values",
-                                               const bool verbose[0])
+                                              const matrix V "Column vector of G scalar values",
+                                              const bool verbose[0])
     /* Helper function imposing group-wise values taken from vector V. The i-th entry
     in V is mapped onto the i-th group Gi. */
-   
+
     matrix groups = values(G)
     series R = NA
     loop i=1..rows(groups) -q
         catch smpl G==groups[i] --restrict --replace --quiet
-        
+
         if $error
             if verbose
                 printf "\nWarning: No observation left for G = %d\n", groups[i]
             endif
             return R
         endif
-        
+
         series R = V[i]
         smpl full			# TODO: For some reason --replace option does not work
     endloop
@@ -100,7 +119,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
                           const series G "Holding group IDs",
                           const int num_components[0::0] "Retrieve only first n PCs",
                           const bool mean_encode[1] "Run means_encode()",
-                          const bool verbose[0])
+      const bool verbose[0])
 
     check_num_xlist_entries(X)
     check_num_components(X, num_components)
@@ -134,7 +153,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
     endloop
 
     smpl full
-    
+
     return R
 end function
 
@@ -143,7 +162,7 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
                                const series G "Holding group IDs",
                                const int num_components[0::0] "Retrieve only first n PCs",
                                const bool mean_encode[1] "Run means_encode()",
-                               const bool verbose[0])
+      const bool verbose[0])
     /* SVD based encoding */
 
     check_num_xlist_entries(X)
@@ -182,8 +201,8 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
                           const bool mean_encode[1] "Run means_encode()",
       const bool verbose[0])
     /* Multinomial logistic regression.
-    Requires also coefficients from reference category which are, however,
-    not returned by gretl. */
+       Requires also coefficients from reference category which are, however,
+      not returned by gretl. */
 
     check_num_xlist_entries(X)
 
@@ -194,7 +213,7 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
     endif
 
     logit G const X --multinomial @verbose_opt
-    
+
     scalar pos_const = inlist($xlist, "const")
 
     # Group-wise coefficient i is stored in rows of beta
@@ -219,7 +238,7 @@ end function
 
 
 function matrix tall_svd (const matrix X, matrix *U, matrix *V)
-    /* Special-case svd when X has lots of rows and few columns.
+/* Special-case svd when X has lots of rows and few columns.
     Written by Jack Lucchetti */
 
     scalar c = cols(X)
@@ -227,11 +246,17 @@ function matrix tall_svd (const matrix X, matrix *U, matrix *V)
     lambdas = mreverse(sqrt(lambdas))'
     V = V[,seq(c,1)]
     U = X*(V./lambdas)
-    
+
     return lambdas
 end function
 
 
+function void check_series_g_isdiscrete (const series G "Discrete grouping series")
+    /* Check whether grouping series G is discrete. */
+    if !isdiscrete(G)
+        funcerr "Error: Input series %s is not discrete\n", argname(G)
+    endif    
+end function
 
 function void check_num_components (const list X, const int num_components)
     /* Helper function checking that number compoents supposed to store does not exceed list members */
