@@ -106,7 +106,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
     check_num_components(X, num_components)
 
     if mean_encode
-        list Xmean = means_encode(X, G)
+        list X = means_encode(X, G)
     endif
 
     string verbose_opt = get_verbose_opt(verbose)
@@ -119,13 +119,20 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
 
     smpl G X --no-missing					# TODO: Maybe more efficient when put into means_encode()?
 
-    if mean_encode
-        pca Xmean @save_opt @verbose_opt
-    else
-        pca X @save_opt @verbose_opt			# Make use of pointer access for X
-    endif
+    pca X @save_opt @verbose_opt
+    list PC = PC*
 
-    list R = PC*
+    list R = null
+    strings xnames = varnames(X)
+    loop foreach i X -q
+        list R += genseries(sprintf("%s_pca", xnames[i]), PC[i])
+        if num_components > 0
+            if $i == num_components
+                break
+            endif
+        endif
+    endloop
+
     smpl full
     
     return R
@@ -154,8 +161,9 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
     matrix sv = tall_svd({X}, &U, &V)
 
     list R = null
+    strings xnames = varnames(X)
     loop foreach i X -q
-        list R += genseries(sprintf("SVD%d", i), U[,i])
+        list R += genseries(sprintf("%s_svd", xnames[i]), U[,i])
         if num_components > 0
             if $i == num_components
                 break
@@ -182,15 +190,11 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
     string verbose_opt = get_verbose_opt(verbose)
 
     if mean_encode
-        list Xmean = means_encode(X, G)
+        list X = means_encode(X, G)
     endif
 
-    if mean_encode
-        logit G const Xmean --multinomial @verbose_opt
-    else
-        logit G const X --multinomial @verbose_opt
-    endif
-
+    logit G const X --multinomial @verbose_opt
+    
     scalar pos_const = inlist($xlist, "const")
 
     # Group-wise coefficient i is stored in rows of beta
