@@ -1,14 +1,14 @@
 # https://github.com/grf-labs/sufrep
 
 
-function list ohe_encode (const series G "Holding group IDs",
+function list ohe_encode (const series X "Discrete series",
                           const bool drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
                           const bool verbose[0] "Print details")
     /* One-hot encoding aka 'dummification' of categorical variable */
 
     list R = null
 
-    scalar check = series_g_isdiscrete(G)
+    scalar check = series_g_isdiscrete(X)
     if check==0
         return R
     endif
@@ -17,14 +17,14 @@ function list ohe_encode (const series G "Holding group IDs",
     to_be_droppped = (drop==1) ? "--drop-first" : to_be_droppped
     to_be_droppped = (drop==2) ? "--drop-last" : to_be_droppped
 
-    dummify G @to_be_droppped
+    dummify X @to_be_droppped
     list R += D*
 
     if verbose
         if drop==1
-            printf "\nInfo: The highest value of variable %s is omitted from the encoding.\n", argname(G)
+            printf "\nInfo: The highest value of variable %s is omitted from the encoding.\n", argname(X)
         elif drop==2
-            printf "\nInfo: The lowest value of variable %s is omitted from the encoding.\n", argname(G)
+            printf "\nInfo: The lowest value of variable %s is omitted from the encoding.\n", argname(X)
         endif
     endif
 
@@ -32,7 +32,7 @@ function list ohe_encode (const series G "Holding group IDs",
 end function
 
 function list binarizer (const list X "List of series",
-                         const scalar threshold "Series values below or equal to this are replaced by 0, above it by 1.",
+                         const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
                          const bool verbose[0] "Print details")
     /* Binarize data (set feature values to 0 or 1) according to a threshold */
 
