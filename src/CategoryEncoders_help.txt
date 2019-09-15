@@ -1,0 +1,136 @@
+
+*** Category Encoder ***
+
+written by Artur Tarassow
+
+Please report bugs or comments on the gretl mailing list or write to t.artur@posteo.de.
+
+
+A set of transformers for encoding variables into numeric with different techniques. Some of the techniques are inspired by Python's scikit-learn library. 
+
+The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the recent paper of Athey et al. (2019) entitled "Sufficient Representations for Categorical Variables" (URL: https://arxiv.org/abs/1908.09874). There project page can be found here: https://github.com/grf-labs/sufrep
+
+
+----------------
+Public Functions
+----------------
+
+binarizer
+==========
+Binarize data (set feature values to 0 or 1) according to a threshold. Values greater than the threshold map to 1, while values less than or equal to the threshold map to 0. With the default threshold of 0, only positive values map to 1.
+
+Parameters:
+-----------
+X			- list, List of series to which to apply the function
+threshold 	- scalar, Feature values below or equal to this are replaced by 			0, above it by 1. (0.0 by default)
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with binary values. The i-th series name takes the i-th input series' name plus the suffix "_bin".
+
+
+ohe_encode
+==========
+Encode categorical discrete integer features as a one-hot (binary) list of series. The encoder derives the categories based on the unique values in the input series.
+
+Parameters:
+-----------
+X			- series, Discrete series to which to apply the function
+drop	 	- int, Decide whether to drop a resulting series. Per default no 				resulting series is droppped. For drop=1 the highest value of 				X is omitted from the encoding. For drop=2 the lowest value of				X is omitted from the encoding.
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with binary values. The i-th series is named 'Dx_i'
+where 'x' refers to the name of series X and 'i' to the i-th distinct values of series X.
+
+
+means_encode
+============
+Compute group-wise, as identified by the discrete series G, mean values for each variable in list X.
+
+Parameters:
+-----------
+X			- list, List of series to which to apply the function
+G 			- series, Discrete series identifying unique groups
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise mean values. The i-th series name takes the i-th input series' name plus the suffix "_mean".
+
+
+median_encode
+============
+Compute group-wise, as identified by the discrete series G, median values for each variable in list X.
+
+Parameters:
+-----------
+X			- list, List of series to which to apply the function
+G 			- series, Discrete series identifying unique groups
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise median values. The i-th series name takes the i-th input series' name plus the suffix "_median".
+
+
+pca_encode
+============
+Compute group-wise, as identified by the discrete series G, principle components using all information in list X.
+
+Parameters:
+-----------
+X				- list, List of series to which to apply the function
+G 				- series, Discrete series identifying unique groups
+num_components	- int, Retrieve only the first n principle components (per 					default retrieve all)
+mean_encode 	- bool, Apply means-encoding on all X elemenets before 						computing the principle components of these mean-encoded					series.
+verbose			- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix "_pca".
+
+
+low_rank_encode
+============
+Compute group-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+
+Parameters:
+-----------
+X				- list, List of k series to which to apply the function
+G 				- series, Discrete series identifying unique groups
+				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+mean_encode 	- bool, Apply means-encoding on all X elemenets before 						computing the low-rank components of these mean-encoded						series.
+verbose			- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "_svd".
+
+
+mnl_encode
+============
+Compute group-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+
+Parameters:
+-----------
+X				- list, List of k series to which to apply the function
+G 				- series, Discrete series identifying unique groups
+				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+mean_encode 	- bool, Apply means-encoding on all X elemenets before 						computing the low-rank components of these mean-encoded						series.
+verbose			- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "_svd".
+
+
+
+
+
+Changelog:
+----------
+Version 0.2 (Sept. 2019):
+- Initial version
