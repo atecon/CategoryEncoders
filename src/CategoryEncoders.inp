@@ -31,8 +31,25 @@ function list ohe_encode (const series G "Holding group IDs",
     return R
 end function
 
+function list binarizer (const list X "List of series",
+                         const scalar threshold "Series values below or equal to this are replaced by 0, above it by 1.",
+                         const bool verbose[0] "Print details")
+    /* Binarize data (set feature values to 0 or 1) according to a threshold */
 
-function list means_or_median_encode (const list X "Exogenous regressors",
+    list R = null
+
+    loop foreach i X -q
+        string vname = sprintf("%s_bin", varname(X.$i))
+        series @vname = NA
+        @vname = 0*(X.$i <= threshold) || (X.$i > threshold)
+        list R += @vname
+    endloop
+
+    return R
+end function
+
+
+function list means_or_median_encode (const list X "List of series",
                                       const series G "Holding group IDs",
                                       const bool use_median[0] "Median instead of mean encoding",
                                       const bool verbose[0] "Print details")
@@ -62,7 +79,7 @@ function list means_or_median_encode (const list X "Exogenous regressors",
 end function
 
 
-function list median_encode (const list X "Exogenous regressors",
+function list median_encode (const list X "List of series",
                              const series G "Holding group IDs",
                              const bool verbose[0])
     /* Group-wise median computation wrapper function */
@@ -71,7 +88,7 @@ function list median_encode (const list X "Exogenous regressors",
 end function
 
 
-function list means_encode (const list X "Exogenous regressors",
+function list means_encode (const list X "List of series",
                             const series G "Holding group IDs",
                             const bool verbose[0])
     /* Group-wise mean computation wrapper function */
