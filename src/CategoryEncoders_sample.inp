@@ -21,10 +21,12 @@ setinfo unit --discrete
 list Xbase = density wcon
 
 
+# Start encoding
+#----------------
+
+# One-hot encoding (aka dummifying)
 list OHE = ohe_encode(unit)
 OHE
-stop
-
 
 # Mean encoding
 list Xpmean = means_encode(Xbase, unit)

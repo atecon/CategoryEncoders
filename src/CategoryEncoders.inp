@@ -7,7 +7,7 @@ function list ohe_encode (const series G "Holding group IDs",
     /* One-hot encoding aka 'dummification' of categorical variable */
 
     list R = null
-    
+
     scalar check = series_g_isdiscrete(G)
     if check==0
         return R
@@ -16,10 +16,18 @@ function list ohe_encode (const series G "Holding group IDs",
     string to_be_droppped = ""
     to_be_droppped = (drop==1) ? "--drop-first" : to_be_droppped
     to_be_droppped = (drop==2) ? "--drop-last" : to_be_droppped
-    
+
     dummify G @to_be_droppped
     list R += D*
-    
+
+    if verbose
+        if drop==1
+            printf "\nInfo: The highest value of variable %s is omitted from the encoding.\n", argname(G)
+        elif drop==2
+            printf "\nInfo: The lowest value of variable %s is omitted from the encoding.\n", argname(G)
+        endif
+    endif
+
     return R
 end function
 
@@ -31,7 +39,7 @@ function list means_or_median_encode (const list X "Exogenous regressors",
     /* Function actually computing means/median_encoder */
 
     list R = null
-    
+
     scalar check = series_g_isdiscrete(G)
     if check==0
         return R
@@ -87,7 +95,7 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
         catch smpl G==groups[i] --restrict --replace --quiet
         if $error
             if verbose
-                printf "\nWarning: No observations exist for group G=%d\n", groups[i]
+                printf "\nWarning: No observation exists for group G=%d\n", groups[i]
             endif
             return R
         endif
@@ -111,7 +119,7 @@ function series series_with_groupwise_values (const series G,
 
         if $error
             if verbose
-                printf "\nWarning: No observation left for G = %d\n", groups[i]
+                printf "\nWarning: No observation exists for group G=%d\n", groups[i]
             endif
             return R
         endif
@@ -133,7 +141,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
       const bool verbose[0])
 
     list R = null
-    
+
     scalar check = series_g_isdiscrete(G)
     if check==0
         return R
@@ -184,7 +192,7 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
                                const series G "Holding group IDs",
                                const int num_components[0::0] "Retrieve only first n PCs",
                                const bool mean_encode[1] "Run means_encode()",
-                               const bool verbose[0])
+      const bool verbose[0])
     /* SVD based encoding */
 
     list R = null
@@ -210,7 +218,7 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
 
     matrix U
     matrix V
-    #matrix sv = svd({X}, &U, &V)
+    #matrix sv = svd({X}, &U, &V)				# slower than tall_svd()
     matrix sv = tall_svd({X}, &U, &V)
 
     strings xnames = varnames(X)
@@ -237,8 +245,8 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
        Requires also coefficients from reference category which are, however,
       not returned by gretl. */
 
-       list R = null
-       
+    list R = null
+
     scalar check = series_g_isdiscrete(G)
     if check==0
         return R
@@ -298,12 +306,12 @@ function scalar series_g_isdiscrete (const series G "Discrete grouping series")
     if !isdiscrete(G)
         printf "\nError: Input series %s is not discrete. Check the 'setinfo' command.\n", argname(G)
         return 0
-    endif    
+    endif
     return 1
 end function
 
 function scalar check_num_components (const list X, const int num_components)
-    /* Helper function checking that number compoents supposed to store
+/* Helper function checking that number compoents supposed to store
     does not exceed list members */
     if num_components > nelem(X)
         printf "\nError: Argument num_components cannot be larger than length of list X."
