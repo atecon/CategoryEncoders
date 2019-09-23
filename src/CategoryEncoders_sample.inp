@@ -1,7 +1,7 @@
 clear
 set verbose off
 
-if $sysinfo.hostname == "at" || $sysinfo.hostname == "atdesktop"
+if $sysinfo.hostname == "at" || $sysinfo.hostname == "atdesktop" || $sysinfo.hostname == "ati7"
     string DIR_WORK = "/home/at/git/CategoryEncoders"
 elif $sysinfo.hostname == "dsb"
     string DIR_WORK = "/home/ninja/repo/CategoryEncoders"
@@ -25,11 +25,11 @@ list OHE = ohe_encode(unit)
 print unit OHE -o --range=70:80
 
 # Binarizer
-list BIN = binarizer (Xbase, 1.1)
+list BIN = binary_encode(Xbase, 1.1)
 print Xbase BIN -o --range=70:80
 
 # Mean encoding
-list Xpmean = means_encode(Xbase, unit)
+list Xpmean = means_encode(Xbase, unit, "some_suffix")
 print unit Xbase Xpmean -o --range=70:80
 
 # Median encoding
@@ -44,8 +44,8 @@ print unit Xbase Xpca -o --range=70:80
 list Xpca_wo_mean = pca_encode(Xbase, unit, , 0)
 print unit Xbase Xpca_wo_mean -o --range=70:80
 
-# SVD encoding
-list Xsvd = low_rank_encode(Xbase, unit)
+# SVD (low rank) encoding but return only first 2 components
+list Xsvd = low_rank_encode(Xbase, unit, 2)
 print unit Xbase Xsvd -o --range=70:80
 
 # Multinomial logistic regression coefficients (excluding intercept which is used for estimation)

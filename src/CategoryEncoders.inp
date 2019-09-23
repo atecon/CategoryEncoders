@@ -3,7 +3,6 @@
 
 function list ohe_encode (const series X "Discrete series",
                           const bool drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
-                          const string suffix[null] "Suffix for returned series name",
                           const bool verbose[0] "Print details")
     /* One-hot encoding aka 'dummification' of categorical variable */
 
@@ -14,19 +13,21 @@ function list ohe_encode (const series X "Discrete series",
         return R
     endif
 
-    *** HIER WEITERMACHEN ***
-    # suffix-feature einbauen
-    if !exists(suffix)
-        string suffix = "_bin"
-    endif
-
-
     string to_be_droppped = ""
     to_be_droppped = (drop==1) ? "--drop-first" : to_be_droppped
     to_be_droppped = (drop==2) ? "--drop-last" : to_be_droppped
 
     dummify X @to_be_droppped
     list R += D*
+
+    # Rename returned list of OHE series
+    matrix X_values = values(X)
+
+    loop foreach i R -q
+        string current_name = varnames(R)[i]
+        string new_name = sprintf("%s_ohe_%d", argname(X), X_values[i])
+        rename @current_name @new_name
+    endloop
 
     if verbose
         if drop==1
@@ -41,7 +42,7 @@ end function
 
 function list binary_encode (const list X "List of series",
                              const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
-                             const string suffix[null] "Suffix for returned series name",
+                             string suffix[null] "Suffix for returned series name",
                              const bool verbose[0] "Print details")
     /* Binarize data (set feature values to 0 or 1) according to a threshold */
 
@@ -64,7 +65,7 @@ end function
 function list means_or_median_encode (const list X "List of series",
                                       const series G "Holding group IDs",
                                       const bool use_median[0] "Median instead of mean encoding",
-                                      const string suffix "Suffix for returned series name",
+                                      string suffix "Suffix for returned series name",
                                       const bool verbose[0] "Print details")
     /* Function actually computing means/median_encoder */
 
@@ -96,7 +97,7 @@ end function
 
 function list median_encode (const list X "List of series",
                              const series G "Holding group IDs",
-                             const string suffix[null] "Suffix for returned series name",
+                             string suffix[null] "Suffix for returned series name",
                              const bool verbose[0])
     /* Group-wise median computation wrapper function */
 
@@ -110,7 +111,7 @@ end function
 
 function list means_encode (const list X "List of series",
                             const series G "Holding group IDs",
-                            const string suffix[null] "Suffix for returned series name",                            
+                            string suffix[null] "Suffix for returned series name",
                             const bool verbose[0])
     /* Group-wise mean computation wrapper function */
 
@@ -132,7 +133,7 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
 
     matrix agg = aggregate(X, G, @operation)
     matrix groups = values(G)
-    
+
     series R = NA
     loop i=1..rows(groups) -q
         catch smpl G==groups[i] --restrict --replace --quiet
@@ -181,7 +182,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
                           const series G "Holding group IDs",
                           const int num_components[0::0] "Retrieve only first n PCs",
                           const bool mean_encode[1] "Run means_encode()",
-                          const string suffix[null] "Suffix for returned series name",
+                          string suffix[null] "Suffix for returned series name",
                           const bool verbose[0])
 
     list R = null
@@ -239,7 +240,7 @@ end function
 function list low_rank_encode (list X "Exogenous regressors of groupe-wise means",
                                const series G "Holding group IDs",
                                const int num_components[0::0] "Retrieve only first n PCs",
-                               const string suffix[null] "Suffix for returned series name",                               
+                               string suffix[null] "Suffix for returned series name",
                                const bool mean_encode[1] "Run means_encode()",
       const bool verbose[0])
     /* SVD based encoding */
@@ -275,10 +276,12 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
     endif
 
     strings xnames = varnames(X)
+    scalar counter = 0
     loop foreach i X -q
         list R += genseries(sprintf("%s%s", xnames[i], suffix), U[,i])
+        counter++
         if num_components > 0
-            if $i == num_components
+            if counter == num_components
                 break
             endif
         endif
@@ -292,9 +295,9 @@ end function
 
 function list mnl_encode (const list X "Exogenous regressors of groupe-wise means",
                           const series G "Dependent variable holding group IDs",
-                          const string suffix[null] "Suffix for returned series name",                          
                           const bool mean_encode[1] "Run means_encode()",
-      const bool verbose[0])
+                          string suffix[null] "Suffix for returned series name",                          
+                          const bool verbose[0])
     /* Multinomial logistic regression.
        Requires also coefficients from reference category which are, however,
       not returned by gretl. */
@@ -321,7 +324,7 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
     scalar pos_const = inlist($xlist, "const")
 
     # Group-wise coefficient i is stored in rows of beta
-    matrix beta = zeros(1, $model.cblock) | \
+    matrix beta = ones(1, $model.cblock) | \
       mshape($coeff, $model.cblock, $model.multinom)'	# rows: unit, cols: coeff
     if pos_const > 0
         beta = beta[, -pos_const]			# TODO: Shall we drop column of intercepts?
