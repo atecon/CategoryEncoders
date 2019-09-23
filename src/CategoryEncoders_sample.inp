@@ -1,17 +1,11 @@
 clear
 set verbose off
 
-if $sysinfo.hostname == "at" || $sysinfo.hostname == "atdesktop" || $sysinfo.hostname == "ati7"
-    string DIR_WORK = "/home/at/git/CategoryEncoders"
-elif $sysinfo.hostname == "dsb"
-    string DIR_WORK = "/home/ninja/repo/CategoryEncoders"
-endif
-
-include "@DIR_WORK/src/CategoryEncoders.inp" --force
+include "CategoryEncoders.gfn" --force
 
 open nc_crime.gdt -q --preserve
 
-# Cross-sectional grouping variable
+# Illustrative discrete 'grouping' variable
 series unit = urban
 setinfo unit --discrete
 

@@ -1,6 +1,3 @@
-# https://github.com/grf-labs/sufrep
-
-
 function list ohe_encode (const series X "Discrete series",
                           const bool drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
                           const bool verbose[0] "Print details")
@@ -39,6 +36,7 @@ function list ohe_encode (const series X "Discrete series",
 
     return R
 end function
+
 
 function list binary_encode (const list X "List of series",
                              const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
@@ -95,6 +93,7 @@ function list means_or_median_encode (const list X "List of series",
     return R
 end function
 
+
 function list median_encode (const list X "List of series",
                              const series G "Holding group IDs",
                              string suffix[null] "Suffix for returned series name",
@@ -150,6 +149,7 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
     return R
 end function
 
+
 function series series_with_groupwise_values (const series G,
                                               const matrix V "Column vector of G scalar values",
                                               const bool verbose[0])
@@ -169,7 +169,7 @@ function series series_with_groupwise_values (const series G,
         endif
 
         series R = V[i]
-        smpl full			# TODO: For some reason --replace option does not work
+        smpl full			# For some reason --replace option does not work
     endloop
     smpl full
 
@@ -182,8 +182,8 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
                           const series G "Holding group IDs",
                           const int num_components[0::0] "Retrieve only first n PCs",
                           const bool mean_encode[1] "Run means_encode()",
-                          string suffix[null] "Suffix for returned series name",
-                          const bool verbose[0])
+      string suffix[null] "Suffix for returned series name",
+      const bool verbose[0])
 
     list R = null
 
@@ -212,7 +212,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
         string save_opt = sprintf("--save=%d", num_components)
     endif
 
-    smpl G X --no-missing					# TODO: Maybe more efficient when put into means_encode()?
+    smpl G X --no-missing
 
     pca X @save_opt @verbose_opt
     list PC = PC*
@@ -296,8 +296,8 @@ end function
 function list mnl_encode (const list X "Exogenous regressors of groupe-wise means",
                           const series G "Dependent variable holding group IDs",
                           const bool mean_encode[1] "Run means_encode()",
-                          string suffix[null] "Suffix for returned series name",                          
-                          const bool verbose[0])
+      string suffix[null] "Suffix for returned series name",
+      const bool verbose[0])
     /* Multinomial logistic regression.
        Requires also coefficients from reference category which are, however,
       not returned by gretl. */
@@ -327,7 +327,7 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
     matrix beta = ones(1, $model.cblock) | \
       mshape($coeff, $model.cblock, $model.multinom)'	# rows: unit, cols: coeff
     if pos_const > 0
-        beta = beta[, -pos_const]			# TODO: Shall we drop column of intercepts?
+        beta = beta[, -pos_const]			# ISSUE: Shall we drop column of intercepts?
     endif
 
     if rows(beta) != rows(values(G))
@@ -340,7 +340,7 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
 
     list R = null
     strings xnames = varnames(X)
-    loop i=1..nelem(X) -q					# TODO: must '1+nelem(X)' in case the intercept is considered
+    loop i=1..nelem(X) -q					# Note: must be '1+nelem(X)' in case the intercept is considered
         list R += genseries(sprintf("%s%s", xnames[i], suffix), series_with_groupwise_values(G, beta[,i]))
     endloop
 
@@ -349,8 +349,8 @@ end function
 
 
 function matrix tall_svd (const matrix X, matrix *U, matrix *V)
-/* Special-case svd when X has lots of rows and few columns.
-    Written by Jack Lucchetti */
+/* Special-case svd when X has lots of rows and few columns. Faster than built-in svd().
+    Written by Jack Lucchetti. */
 
     scalar c = cols(X)
     matrix lambdas = eigensym(X'X, &V)
@@ -364,6 +364,7 @@ end function
 
 function scalar series_g_isdiscrete (const series G "Discrete grouping series")
     /* Check whether grouping series G is discrete. */
+
     if !isdiscrete(G)
         printf "\nError: Input series %s is not discrete. Check the 'setinfo' command.\n", argname(G)
         return 0
@@ -371,9 +372,11 @@ function scalar series_g_isdiscrete (const series G "Discrete grouping series")
     return 1
 end function
 
-function scalar check_num_components (const list X, const int num_components)
-/* Helper function checking that number compoents supposed to store
+function scalar check_num_components (const list X,
+                                      const int num_components)
+    /* Helper function checking that number compoents supposed to store
     does not exceed list members */
+
     if num_components > nelem(X)
         printf "\nError: Argument num_components cannot be larger than length of list X."
         return 0

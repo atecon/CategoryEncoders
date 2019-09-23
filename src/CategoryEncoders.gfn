@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gretl-functions>
+<gretl-function-package name="CategoryEncoders" no-data-ok="true" minver="2018a">
+<author email="atecon@posteo.de">Artur Tarassow</author>
+<version>0.2</version>
+<date>2019-09-23</date>
+<description>Encoder based on categorical variables</description>
+<tags>C10</tags>
+<help>
+*** CategoryEncoders ***
+
+written by Artur Tarassow
+
+Please report bugs or comments on the gretl mailing list or write to t.artur@posteo.de.
+
+
+A set of transformers for encoding variables into numeric with different techniques. Some of the techniques are inspired by Python's scikit-learn library and especially its 'preprocessing' class.
+
+The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled &quot;Sufficient Representations for Categorical Variables&quot; (URL: https://arxiv.org/abs/1908.09874). Their project-page can be found here: https://github.com/grf-labs/sufrep.
+
+
+----------------
+Public Functions
+----------------
+
+binary_encode
+=============
+Binarize data (set feature values to 0 or 1) according to a threshold. Values greater than the threshold map to 1, while values less than or equal to the threshold map to 0. With the default threshold of 0, only positive values map to 1.
+
+Parameters:
+-----------
+X			- list, List of series to which to apply the function
+threshold 	- scalar, Feature values below or equal to this are 				replaced by	0, above it by 1. (0.0 by default)
+suffix		- string, Add a suffix to the returned series' name 				(default value &quot;_bin&quot;)
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with binary values. The i-th series name takes the i-th input series' name plus the suffix &quot;_bin&quot; if not differently set.
+
+
+ohe_encode
+==========
+Encode categorical discrete integer features of a single series as a one-hot (binary) list of series. The encoder derives the categories based on the unique values of the input series.
+
+Parameters:
+-----------
+X			- series, Series with discrete values to which to apply 			the function
+drop	 	- int, Decide whether to drop a resulting series. Per 				default no resulting series is droppped. For drop=1, the 			 highest value of X is omitted from the encoding. For drop=2			the lowest value of X is omitted from the encoding
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with binary values. The i-th series is named 'Dx_i' where 'x' refers to the name of input series X and 'i' to the i-th distinct value of X.
+
+
+means_encode
+============
+Compute category-wise, as identified by the discrete series G, mean values for each variable in list X.
+
+Parameters:
+-----------
+X			- list, List of series to which to apply the function
+G 			- series, Discrete series refering to unique categories
+suffix		- string, Add a suffix to the returned series' name 				(default value &quot;_mean&quot;)
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix &quot;_mean&quot; if not differently set.
+
+
+median_encode
+=============
+Compute category-wise, as identified by the discrete series G, median values for each variable in list X.
+
+Parameters:
+-----------
+X			- list, List of series to which to apply the function
+G 			- series, Discrete series refering to unique categories
+suffix		- string, Add a suffix to the returned series' name 				(default value &quot;_mean&quot;)
+verbose		- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix &quot;_median&quot; if not differently set..
+
+
+pca_encode
+==========
+Compute category-wise, as identified by the discrete series G, principle components using all information in list X.
+
+Parameters:
+-----------
+X				- list, List of series to which to apply the function
+G 				- series, Discrete series identifying unique categories
+num_components	- int, Retrieve only the first n principle components 					(per default retrieve all)
+mean_encode 	- bool, Apply means-encoding on all X elemenets before					computing the principle components of these n-encoded					series.
+suffix			- string, Add a suffix to the returned series' name 				(default value &quot;_pca&quot;)
+verbose			- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix &quot;_pca&quot; if not differently set.
+
+
+low_rank_encode
+===============
+Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+
+Parameters:
+-----------
+X				- list, List of k series to which to apply the function
+G 				- series, Discrete series identifying unique groups
+				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+mean_encode 	- bool, Apply means-encoding on all X elemenets before 					computing the low-rank components of these 							mean-encoded series.
+suffix			- string, Add a suffix to the returned series' name 				(default value &quot;_svd&quot;)
+verbose			- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix &quot;_svd&quot; if not differently set.
+
+
+mnl_encode
+============
+Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+
+Parameters:
+-----------
+X				- list, List of k series to which to apply the function
+G 				- series, Discrete series identifying unique groups
+				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+mean_encode 	- bool, Apply means-encoding on all X elemenets before 					computing the low-rank components of these 							mean-encoded series.
+suffix			- string, Add a suffix to the returned series' name 				(default value &quot;_mnl&quot;)
+verbose			- bool, Print details or not (per default no printout)
+
+Returns:
+--------
+List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix &quot;_mnl&quot; if not differently set.
+
+
+
+Changelog:
+----------
+Version 0.2 (Sept. 2019):
+- Initial version
+</help>
+<gretl-function name="ohe_encode" type="list">
+ <params count="3">
+  <param name="X" type="series" const="true">
+<description>Discrete series</description>
+  </param>
+  <param name="drop" type="bool" default="0" const="true">
+<description>0=drop none, 1=drop-first, 2=drop-last</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true">
+<description>Print details</description>
+  </param>
+ </params>
+<code>/* One-hot encoding aka 'dummification' of categorical variable */
+list R = null
+scalar check = series_g_isdiscrete(X)
+if check==0
+  return R
+endif
+string to_be_droppped = &quot;&quot;
+to_be_droppped = (drop==1) ? &quot;--drop-first&quot; : to_be_droppped
+to_be_droppped = (drop==2) ? &quot;--drop-last&quot; : to_be_droppped
+dummify X @to_be_droppped
+list R += D*
+# Rename returned list of OHE series
+matrix X_values = values(X)
+loop foreach i R -q
+  string current_name = varnames(R)[i]
+  string new_name = sprintf(&quot;%s_ohe_%d&quot;, argname(X), X_values[i])
+  rename @current_name @new_name
+endloop
+if verbose
+  if drop==1
+    printf &quot;\nInfo: The highest value of variable %s is omitted from the encoding.\n&quot;, argname(X)
+  elif drop==2
+    printf &quot;\nInfo: The lowest value of variable %s is omitted from the encoding.\n&quot;, argname(X)
+  endif
+endif
+return R
+</code>
+</gretl-function>
+<gretl-function name="binary_encode" type="list">
+ <params count="4">
+  <param name="X" type="list" const="true">
+<description>List of series</description>
+  </param>
+  <param name="threshold" type="scalar" default="0" const="true">
+<description>Series values below or equal to this are replaced by 0, above it by 1.</description>
+  </param>
+  <param name="suffix" type="string" optional="true">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true">
+<description>Print details</description>
+  </param>
+ </params>
+<code>/* Binarize data (set feature values to 0 or 1) according to a threshold */
+if !exists(suffix)
+  string suffix = &quot;_bin&quot;
+endif
+list R = null
+loop foreach i X -q
+  string vname = sprintf(&quot;%s%s&quot;, varname(X.$i), suffix)
+  series @vname = NA
+  @vname = 0*(X.$i &lt;= threshold) || (X.$i &gt; threshold)
+  list R += @vname
+endloop
+return R
+</code>
+</gretl-function>
+<gretl-function name="median_encode" type="list">
+ <params count="4">
+  <param name="X" type="list" const="true">
+<description>List of series</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Holding group IDs</description>
+  </param>
+  <param name="suffix" type="string" optional="true">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>/* Group-wise median computation wrapper function */
+if !exists(suffix)
+  string suffix = &quot;&quot;
+endif
+return means_or_median_encode(X, G, 1, suffix, verbose)
+</code>
+</gretl-function>
+<gretl-function name="means_encode" type="list">
+ <params count="4">
+  <param name="X" type="list" const="true">
+<description>List of series</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Holding group IDs</description>
+  </param>
+  <param name="suffix" type="string" optional="true">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>/* Group-wise mean computation wrapper function */
+if !exists(suffix)
+  string suffix = &quot;&quot;
+endif
+return means_or_median_encode(X, G, 0, suffix, verbose)
+</code>
+</gretl-function>
+<gretl-function name="pca_encode" type="list">
+ <params count="6">
+  <param name="X" type="list" const="true">
+<description>Exogenous regressors of groupe-wise means</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Holding group IDs</description>
+  </param>
+  <param name="num_components" type="int" min="0" default="0" const="true">
+<description>Retrieve only first n PCs</description>
+  </param>
+  <param name="mean_encode" type="bool" default="1" const="true">
+<description>Run means_encode()</description>
+  </param>
+  <param name="suffix" type="string" optional="true">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>list R = null
+scalar check = series_g_isdiscrete(G)
+if check==0
+  return R
+endif
+scalar check = check_num_xlist_entries(X)
+if check==0
+  return R
+endif
+scalar check = check_num_components(X, num_components)
+if check==0
+  return R
+endif
+if mean_encode
+  list X = means_encode(X, G)
+endif
+string verbose_opt = get_verbose_opt(verbose)
+if num_components==0
+  string save_opt = &quot;--save-all&quot;			# PCA on group-wise mean values
+else
+  string save_opt = sprintf(&quot;--save=%d&quot;, num_components)
+endif
+smpl G X --no-missing
+pca X @save_opt @verbose_opt
+list PC = PC*
+if !exists(suffix)
+  string suffix = &quot;_pca&quot;
+endif
+strings xnames = varnames(X)
+loop foreach i X -q
+  list R += genseries(sprintf(&quot;%s%s&quot;, xnames[i], suffix), PC[i])
+  if num_components &gt; 0
+    if $i == num_components
+      break
+    endif
+  endif
+endloop
+smpl full
+return R
+</code>
+</gretl-function>
+<gretl-function name="low_rank_encode" type="list">
+ <params count="6">
+  <param name="X" type="list">
+<description>Exogenous regressors of groupe-wise means</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Holding group IDs</description>
+  </param>
+  <param name="num_components" type="int" min="0" default="0" const="true">
+<description>Retrieve only first n PCs</description>
+  </param>
+  <param name="suffix" type="string" optional="true">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="mean_encode" type="bool" default="1" const="true">
+<description>Run means_encode()</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>/* SVD based encoding */
+list R = null
+scalar check = series_g_isdiscrete(G)
+if check==0
+  return R
+endif
+scalar check = check_num_xlist_entries(X)
+if check==0
+  return R
+endif
+scalar check = check_num_components(X, num_components)
+if check==0
+  return R
+endif
+if mean_encode
+  list X = means_encode(X, G)
+endif
+smpl G X --no-missing
+matrix U
+matrix V
+#matrix sv = svd({X}, &amp;U, &amp;V)				# slower than tall_svd()
+matrix sv = tall_svd({X}, &amp;U, &amp;V)
+if !exists(suffix)
+  string suffix = &quot;_svd&quot;
+endif
+strings xnames = varnames(X)
+scalar counter = 0
+loop foreach i X -q
+  list R += genseries(sprintf(&quot;%s%s&quot;, xnames[i], suffix), U[,i])
+  counter++
+  if num_components &gt; 0
+    if counter == num_components
+      break
+    endif
+  endif
+endloop
+smpl full
+return R
+</code>
+</gretl-function>
+<gretl-function name="mnl_encode" type="list">
+ <params count="5">
+  <param name="X" type="list" const="true">
+<description>Exogenous regressors of groupe-wise means</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Dependent variable holding group IDs</description>
+  </param>
+  <param name="mean_encode" type="bool" default="1" const="true">
+<description>Run means_encode()</description>
+  </param>
+  <param name="suffix" type="string" optional="true">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>/* Multinomial logistic regression.
+Requires also coefficients from reference category which are, however, not returned by gretl. */
+list R = null
+scalar check = series_g_isdiscrete(G)
+if check==0
+  return R
+endif
+scalar check = check_num_xlist_entries(X)
+if check==0
+  return R
+endif
+string verbose_opt = get_verbose_opt(verbose)
+if mean_encode
+  list X = means_encode(X, G)
+endif
+logit G const X --multinomial @verbose_opt
+scalar pos_const = inlist($xlist, &quot;const&quot;)
+# Group-wise coefficient i is stored in rows of beta
+matrix beta = ones(1, $model.cblock) | mshape($coeff, $model.cblock, $model.multinom)' # rows: unit, cols: coeff
+if pos_const &gt; 0
+  beta = beta[, -pos_const]			# ISSUE: Shall we drop column of intercepts?
+endif
+if rows(beta) != rows(values(G))
+  funcerr &quot;ERROR: The no. of distinct groups (G) does not equal the no. of rows of matrix 'beta'&quot;
+endif
+if !exists(suffix)
+  string suffix = &quot;_mnl&quot;
+endif
+list R = null
+strings xnames = varnames(X)
+loop i=1..nelem(X) -q					# Note: must be '1+nelem(X)' in case the intercept is considered
+  list R += genseries(sprintf(&quot;%s%s&quot;, xnames[i], suffix), series_with_groupwise_values(G, beta[,i]))
+endloop
+return R
+</code>
+</gretl-function>
+<gretl-function name="means_or_median_encode" type="list" private="1">
+ <params count="5">
+  <param name="X" type="list" const="true">
+<description>List of series</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Holding group IDs</description>
+  </param>
+  <param name="use_median" type="bool" default="0" const="true">
+<description>Median instead of mean encoding</description>
+  </param>
+  <param name="suffix" type="string">
+<description>Suffix for returned series name</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true">
+<description>Print details</description>
+  </param>
+ </params>
+<code>/* Function actually computing means/median_encoder */
+list R = null
+scalar check = series_g_isdiscrete(G)
+if check==0
+  return R
+endif
+string operation = &quot;mean&quot;
+operation = (use_median) ? &quot;median&quot; : operation
+if strlen(suffix)==0
+  string suffix = operation
+endif
+loop foreach i X -q
+  list R += genseries(sprintf(&quot;%s_%s&quot;, varname(X.$i), suffix), series_with_groupwise_stats(X.$i, G, operation, verbose))
+  if verbose
+    printf &quot;\nInfo: Generated group-wise %s series %s.\n&quot;, operation, varname(X.$i)
+  endif
+endloop
+return R
+</code>
+</gretl-function>
+<gretl-function name="series_with_groupwise_stats" type="series" private="1">
+ <params count="4">
+  <param name="X" type="series" const="true">
+<description>Exogenous regressors</description>
+  </param>
+  <param name="G" type="series" const="true">
+<description>Holding group IDs</description>
+  </param>
+  <param name="operation" type="string" const="true">
+<description>E.g. 'mean', 'sd' etc.</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>/* Helper function for grouping series X by G, computing group-wise
+statistics. Group-wise stats are imposed as values for constructing
+a series */
+matrix agg = aggregate(X, G, @operation)
+matrix groups = values(G)
+series R = NA
+loop i=1..rows(groups) -q
+  catch smpl G==groups[i] --restrict --replace --quiet
+  if $error
+    if verbose
+      printf &quot;\nWarning: No observation exists for group G=%d\n&quot;, groups[i]
+    endif
+    return R
+  endif
+  series R = agg[i,3]
+endloop
+smpl full
+return R
+</code>
+</gretl-function>
+<gretl-function name="series_with_groupwise_values" type="series" private="1">
+ <params count="3">
+  <param name="G" type="series" const="true"/>
+  <param name="V" type="matrix" const="true">
+<description>Column vector of G scalar values</description>
+  </param>
+  <param name="verbose" type="bool" default="0" const="true"/>
+ </params>
+<code>/* Helper function imposing group-wise values taken from vector V. The i-th entry
+in V is mapped onto the i-th group Gi. */
+matrix groups = values(G)
+series R = NA
+loop i=1..rows(groups) -q
+  catch smpl G==groups[i] --restrict --replace --quiet
+  if $error
+    if verbose
+      printf &quot;\nWarning: No observation exists for group G=%d\n&quot;, groups[i]
+    endif
+    return R
+  endif
+  series R = V[i]
+  smpl full			# For some reason --replace option does not work
+endloop
+smpl full
+return R
+</code>
+</gretl-function>
+<gretl-function name="tall_svd" type="matrix" private="1">
+ <params count="3">
+  <param name="X" type="matrix" const="true"/>
+  <param name="U" type="matrixref"/>
+  <param name="V" type="matrixref"/>
+ </params>
+<code>/* Special-case svd when X has lots of rows and few columns. Faster than built-in svd().
+Written by Jack Lucchetti. */
+scalar c = cols(X)
+matrix lambdas = eigensym(X'X, &amp;V)
+lambdas = mreverse(sqrt(lambdas))'
+V = V[,seq(c,1)]
+U = X*(V./lambdas)
+return lambdas
+</code>
+</gretl-function>
+<gretl-function name="series_g_isdiscrete" type="scalar" private="1">
+ <params count="1">
+  <param name="G" type="series" const="true">
+<description>Discrete grouping series</description>
+  </param>
+ </params>
+<code>/* Check whether grouping series G is discrete. */
+if !isdiscrete(G)
+  printf &quot;\nError: Input series %s is not discrete. Check the 'setinfo' command.\n&quot;, argname(G)
+  return 0
+endif
+return 1
+</code>
+</gretl-function>
+<gretl-function name="check_num_components" type="scalar" private="1">
+ <params count="2">
+  <param name="X" type="list" const="true"/>
+  <param name="num_components" type="int" const="true"/>
+ </params>
+<code>/* Helper function checking that number compoents supposed to store
+does not exceed list members */
+if num_components &gt; nelem(X)
+  printf &quot;\nError: Argument num_components cannot be larger than length of list X.&quot;
+  return 0
+endif
+return 1
+</code>
+</gretl-function>
+<gretl-function name="check_num_xlist_entries" type="scalar" private="1">
+ <params count="1">
+  <param name="X" type="list" const="true"/>
+ </params>
+<code>/* Helper function checking number of elements in X */
+if nelem(X)&lt;2
+  printf &quot;\nError: At least 2 series must be in list X.\n&quot;
+  return 0
+endif
+return 1
+</code>
+</gretl-function>
+<gretl-function name="get_verbose_opt" type="string" private="1">
+ <params count="1">
+  <param name="verbose" type="bool" const="true"/>
+ </params>
+<code>string verbose_opt = &quot;&quot;
+return (verbose==0) ? &quot;--quiet&quot; : verbose_opt
+</code>
+</gretl-function>
+<sample-script>
+clear
+set verbose off
+
+include &quot;CategoryEncoders.gfn&quot; --force
+
+open nc_crime.gdt -q --preserve
+
+# Illustrative discrete 'grouping' variable
+series unit = urban
+setinfo unit --discrete
+
+# List of regressors
+list Xbase = density wcon
+
+
+
+# One-hot encoding (aka dummifying)
+list OHE = ohe_encode(unit)
+print unit OHE -o --range=70:80
+
+# Binarizer
+list BIN = binary_encode(Xbase, 1.1)
+print Xbase BIN -o --range=70:80
+
+# Mean encoding
+list Xpmean = means_encode(Xbase, unit, &quot;some_suffix&quot;)
+print unit Xbase Xpmean -o --range=70:80
+
+# Median encoding
+list Xpmedian = median_encode(Xbase, unit)
+print unit Xbase Xpmedian -o --range=70:80
+
+# PCA encoding with automatic mean encoding
+list Xpca = pca_encode(Xbase, unit)			# means_encoding done per default
+print unit Xbase Xpca -o --range=70:80
+
+# PCA encoding without automatic mean encoding
+list Xpca_wo_mean = pca_encode(Xbase, unit, , 0)
+print unit Xbase Xpca_wo_mean -o --range=70:80
+
+# SVD (low rank) encoding but return only first 2 components
+list Xsvd = low_rank_encode(Xbase, unit, 2)
+print unit Xbase Xsvd -o --range=70:80
+
+# Multinomial logistic regression coefficients (excluding intercept which is used for estimation)
+list Xmnl = mnl_encode(Xbase, unit, 1)
+print unit Xbase Xmnl -o --range=70:80
+</sample-script>
+</gretl-function-package>
+</gretl-functions>

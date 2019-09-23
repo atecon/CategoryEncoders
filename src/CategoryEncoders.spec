@@ -1,24 +1,11 @@
-author = Artur Tarassow and Sven Schreiber
+author = Artur Tarassow
 email = atecon@posteo.de
-version = 2.21
-date = 2019-08-12
-description = Forecast Evaluation Package
-tags = C12 C52 C53
-min-version = 2017a
+version = 0.2
+date = 2019-09-23
+description = Encoder based on categorical variables
+tags = C10
+min-version = 2018a
 data-requirement = no-data-ok
-public = doKS doEKTtest_series doHPtest applyFCtests doDLtest \
-  getLoss doDMtest doGWtest doMZtest doPTtest \
-  doCGtest \
-  doPS probscore \
-  DrawLoss DrawLoss2 \
-  GUI_FEP_print GUI_FEP \
-  doCGWILCtest doCGRANKtest \
-  doKStest doEKTtest doKGtest \
-  CamDufStats
-help = FEP.pdf
-sample-script = FEP_sample.inp
-data-files = FEPdata.gdt
-gui-main = GUI_FEP
-bundle-print = GUI_FEP_print
-menu-attachment = MAINWIN/View
-label = Forecast evaluations
+public = ohe_encode binary_encode median_encode means_encode pca_encode low_rank_encode mnl_encode
+help = CategoryEncoders_help.txt
+sample-script = CategoryEncoders_sample.inp
