@@ -3,6 +3,7 @@
 
 function list ohe_encode (const series X "Discrete series",
                           const bool drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
+                          const string suffix[null] "Suffix for returned series name",
                           const bool verbose[0] "Print details")
     /* One-hot encoding aka 'dummification' of categorical variable */
 
@@ -12,6 +13,13 @@ function list ohe_encode (const series X "Discrete series",
     if check==0
         return R
     endif
+
+    *** HIER WEITERMACHEN ***
+    # suffix-feature einbauen
+    if !exists(suffix)
+        string suffix = "_bin"
+    endif
+
 
     string to_be_droppped = ""
     to_be_droppped = (drop==1) ? "--drop-first" : to_be_droppped
@@ -32,14 +40,18 @@ function list ohe_encode (const series X "Discrete series",
 end function
 
 function list binary_encode (const list X "List of series",
-                         const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
-                         const bool verbose[0] "Print details")
+                             const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
+                             const string suffix[null] "Suffix for returned series name",
+                             const bool verbose[0] "Print details")
     /* Binarize data (set feature values to 0 or 1) according to a threshold */
 
-    list R = null
+    if !exists(suffix)
+        string suffix = "_bin"
+    endif
 
+    list R = null
     loop foreach i X -q
-        string vname = sprintf("%s_bin", varname(X.$i))
+        string vname = sprintf("%s%s", varname(X.$i), suffix)
         series @vname = NA
         @vname = 0*(X.$i <= threshold) || (X.$i > threshold)
         list R += @vname
@@ -52,6 +64,7 @@ end function
 function list means_or_median_encode (const list X "List of series",
                                       const series G "Holding group IDs",
                                       const bool use_median[0] "Median instead of mean encoding",
+                                      const string suffix "Suffix for returned series name",
                                       const bool verbose[0] "Print details")
     /* Function actually computing means/median_encoder */
 
@@ -65,9 +78,12 @@ function list means_or_median_encode (const list X "List of series",
     string operation = "mean"
     operation = (use_median) ? "median" : operation
 
+    if strlen(suffix)==0
+        string suffix = operation
+    endif
 
     loop foreach i X -q
-        list R += genseries(sprintf("%s_%s", varname(X.$i), operation), \
+        list R += genseries(sprintf("%s_%s", varname(X.$i), suffix), \
           series_with_groupwise_stats(X.$i, G, operation, verbose))
 
         if verbose
@@ -78,22 +94,31 @@ function list means_or_median_encode (const list X "List of series",
     return R
 end function
 
-
 function list median_encode (const list X "List of series",
                              const series G "Holding group IDs",
+                             const string suffix[null] "Suffix for returned series name",
                              const bool verbose[0])
     /* Group-wise median computation wrapper function */
 
-    return means_or_median_encode(X, G, 1, verbose)
+    if !exists(suffix)
+        string suffix = ""
+    endif
+
+    return means_or_median_encode(X, G, 1, suffix, verbose)
 end function
 
 
 function list means_encode (const list X "List of series",
                             const series G "Holding group IDs",
+                            const string suffix[null] "Suffix for returned series name",                            
                             const bool verbose[0])
     /* Group-wise mean computation wrapper function */
 
-    return means_or_median_encode(X, G, 0, verbose)
+    if !exists(suffix)
+        string suffix = ""
+    endif
+
+    return means_or_median_encode(X, G, 0, suffix, verbose)
 end function
 
 
@@ -107,6 +132,7 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
 
     matrix agg = aggregate(X, G, @operation)
     matrix groups = values(G)
+    
     series R = NA
     loop i=1..rows(groups) -q
         catch smpl G==groups[i] --restrict --replace --quiet
@@ -155,7 +181,8 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
                           const series G "Holding group IDs",
                           const int num_components[0::0] "Retrieve only first n PCs",
                           const bool mean_encode[1] "Run means_encode()",
-      const bool verbose[0])
+                          const string suffix[null] "Suffix for returned series name",
+                          const bool verbose[0])
 
     list R = null
 
@@ -189,9 +216,13 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
     pca X @save_opt @verbose_opt
     list PC = PC*
 
+    if !exists(suffix)
+        string suffix = "_pca"
+    endif
+
     strings xnames = varnames(X)
     loop foreach i X -q
-        list R += genseries(sprintf("%s_pca", xnames[i]), PC[i])
+        list R += genseries(sprintf("%s%s", xnames[i], suffix), PC[i])
         if num_components > 0
             if $i == num_components
                 break
@@ -208,6 +239,7 @@ end function
 function list low_rank_encode (list X "Exogenous regressors of groupe-wise means",
                                const series G "Holding group IDs",
                                const int num_components[0::0] "Retrieve only first n PCs",
+                               const string suffix[null] "Suffix for returned series name",                               
                                const bool mean_encode[1] "Run means_encode()",
       const bool verbose[0])
     /* SVD based encoding */
@@ -238,9 +270,13 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
     #matrix sv = svd({X}, &U, &V)				# slower than tall_svd()
     matrix sv = tall_svd({X}, &U, &V)
 
+    if !exists(suffix)
+        string suffix = "_svd"
+    endif
+
     strings xnames = varnames(X)
     loop foreach i X -q
-        list R += genseries(sprintf("%s_svd", xnames[i]), U[,i])
+        list R += genseries(sprintf("%s%s", xnames[i], suffix), U[,i])
         if num_components > 0
             if $i == num_components
                 break
@@ -256,6 +292,7 @@ end function
 
 function list mnl_encode (const list X "Exogenous regressors of groupe-wise means",
                           const series G "Dependent variable holding group IDs",
+                          const string suffix[null] "Suffix for returned series name",                          
                           const bool mean_encode[1] "Run means_encode()",
       const bool verbose[0])
     /* Multinomial logistic regression.
@@ -294,10 +331,14 @@ function list mnl_encode (const list X "Exogenous regressors of groupe-wise mean
         funcerr "ERROR: The no. of distinct groups (G) does not equal the no. of rows of matrix 'beta'"
     endif
 
+    if !exists(suffix)
+        string suffix = "_mnl"
+    endif
+
     list R = null
     strings xnames = varnames(X)
     loop i=1..nelem(X) -q					# TODO: must '1+nelem(X)' in case the intercept is considered
-        list R += genseries(sprintf("%s_mnl", xnames[i]), series_with_groupwise_values(G, beta[,i]))
+        list R += genseries(sprintf("%s%s", xnames[i], suffix), series_with_groupwise_values(G, beta[,i]))
     endloop
 
     return R
