@@ -5,9 +5,9 @@ written by Artur Tarassow
 Please report bugs or comments on the gretl mailing list or write to t.artur@posteo.de.
 
 
-A set of transformers for encoding variables into numeric with different techniques. Some of the techniques are inspired by Python's scikit-learn library. 
+A set of transformers for encoding variables into numeric with different techniques. Some of the techniques are inspired by Python's scikit-learn library and especially its 'preprocessing' class.
 
-The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the recent paper of Athey et al. (2019) entitled "Sufficient Representations for Categorical Variables" (URL: https://arxiv.org/abs/1908.09874). There project page can be found here: https://github.com/grf-labs/sufrep.
+The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled "Sufficient Representations for Categorical Variables" (URL: https://arxiv.org/abs/1908.09874). Their project-page can be found here: https://github.com/grf-labs/sufrep.
 
 
 ----------------
@@ -37,7 +37,7 @@ Encode categorical discrete integer features of a single series as a one-hot (bi
 Parameters:
 -----------
 X			- series, Series with discrete values to which to apply 			the function
-drop	 	- int, Decide whether to drop a resulting series. Per 				default no resulting series is droppped. For drop=1, the 			highest value of X is omitted from the encoding. For drop=2				the lowest value of X is omitted from the encoding
+drop	 	- int, Decide whether to drop a resulting series. Per 				default no resulting series is droppped. For drop=1, the 			 highest value of X is omitted from the encoding. For drop=2			the lowest value of X is omitted from the encoding
 verbose		- bool, Print details or not (per default no printout)
 
 Returns:
