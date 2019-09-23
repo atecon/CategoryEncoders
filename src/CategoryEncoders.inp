@@ -31,7 +31,7 @@ function list ohe_encode (const series X "Discrete series",
     return R
 end function
 
-function list binarizer (const list X "List of series",
+function list binary_encode (const list X "List of series",
                          const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
                          const bool verbose[0] "Print details")
     /* Binarize data (set feature values to 0 or 1) according to a threshold */
