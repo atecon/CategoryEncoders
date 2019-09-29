@@ -35,6 +35,9 @@ verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with binary values. The i-th series is named 'Dx_i' where 'x' refers to the name of input series X and 'i' to the i-th distinct value of X.
+
+### Example:
+![](/figs/ohe.png)
 ***
 
 ## means_encode
@@ -51,6 +54,9 @@ verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix *_mean* if not differently set.
+
+### Example:
+![](/figs/means_encoding.png)
 ***
 
 ## median_encode
@@ -67,26 +73,6 @@ verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix *_median* if not differently set..
-***
-
-## pca_encode
-Compute category-wise, as identified by the discrete series G, principle components using all information in list X.
-
-### Parameters:
-X -- list, List of series to which to apply the function
-
-G -- series, Discrete series identifying unique categories
-
-num_components -- int, Retrieve only the first n principle components (per default retrieve all)
-
-mean_encode -- bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
-
-suffix -- string, Add a suffix to the returned series' name (default value *_pca*)
-
-verbose -- bool, Print details or not (per default no printout)
-
-### Returns:
-List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix *_pca* if not differently set.
 ***
 
 ## low_rank_encode
@@ -107,6 +93,29 @@ verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix *_svd* if not differently set.
+
+### Example:
+![](/figs/low_rank.png)
+***
+
+## pca_encode
+Works similar to the low_rank_encode() function. Compute category-wise, as identified by the discrete series G, principle components using all information in list X.
+
+### Parameters:
+X -- list, List of series to which to apply the function
+
+G -- series, Discrete series identifying unique categories
+
+num_components -- int, Retrieve only the first n principle components (per default retrieve all)
+
+mean_encode -- bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
+
+suffix -- string, Add a suffix to the returned series' name (default value *_pca*)
+
+verbose -- bool, Print details or not (per default no printout)
+
+### Returns:
+List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix *_pca* if not differently set.
 ***
 
 ## mnl_encode
@@ -126,6 +135,9 @@ verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix *_mnl* if not differently set.
+
+### Example:
+![](/figs/mnl_encoding.png)
 ***
 
 
