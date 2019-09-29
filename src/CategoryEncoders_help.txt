@@ -4,10 +4,11 @@ written by Artur Tarassow
 
 Please report bugs or comments on the gretl mailing list or write to t.artur@posteo.de.
 
+A set of gretl transformers for encoding categorical variables into numeric with different techniques. Many econometric techniques and learning algorithms require categorical data to be transformed into real vectors before it can be used as input.
 
-A set of transformers for encoding variables into numeric with different techniques. Some of the techniques are inspired by Python's scikit-learn library and especially its 'preprocessing' class.
+The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled ["Sufficient Representations for Categorical Variables"] (https://arxiv.org/abs/1908.09874). Their github project-page can be found [here] (https://github.com/grf-labs/sufrep). The authors propose lower-dimensional real-values representations of categorical variables that are sufficient in the sense that no predictive information is lost.
 
-The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled "Sufficient Representations for Categorical Variables" (URL: https://arxiv.org/abs/1908.09874). Their project-page can be found here: https://github.com/grf-labs/sufrep.
+For a more detailed manual, see <https://github.com/atecon/CategoryEncoders/blob/master/README.md>.
 
 
 ----------------
@@ -121,7 +122,7 @@ Parameters:
 -----------
 X				- list, List of k series to which to apply the function
 G 				- series, Discrete series identifying unique groups
-				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
 mean_encode 	- bool, Apply means-encoding on all X elemenets before 					computing the low-rank components of these 							mean-encoded series.
 suffix			- string, Add a suffix to the returned series' name 				(default value "_mnl")
 verbose			- bool, Print details or not (per default no printout)
