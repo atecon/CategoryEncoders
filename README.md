@@ -3,6 +3,61 @@ A set of gretl transformers for encoding categorical variables into numeric with
 
 The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled ["Sufficient Representations for Categorical Variables"] (https://arxiv.org/abs/1908.09874). Their github project-page can be found [here] (https://github.com/grf-labs/sufrep).
 
+# Installation and usage
+To install this package, run the following commands in gretl:
+```gretl
+pkg install CategoryEncoders
+```
+Sample script:
+```gretl
+include "CategoryEncoders.gfn"
+
+open nc_crime.gdt -q --preserve
+
+# Illustrative discrete 'grouping' variable
+series unit = urban
+setinfo unit --discrete
+
+# List of regressors
+list Xbase = density wcon
+
+
+
+# One-hot encoding (aka dummifying)
+list OHE = ohe_encode(unit)
+print unit OHE -o --range=70:80
+
+# Binarizer
+list BIN = binary_encode(Xbase, 1.1)
+print Xbase BIN -o --range=70:80
+
+# Mean encoding
+list Xpmean = means_encode(Xbase, unit, "some_suffix")
+print unit Xbase Xpmean -o --range=70:80
+
+# Median encoding
+list Xpmedian = median_encode(Xbase, unit)
+print unit Xbase Xpmedian -o --range=70:80
+
+# PCA encoding with automatic mean encoding
+list Xpca = pca_encode(Xbase, unit)			# means_encoding done per default
+print unit Xbase Xpca -o --range=70:80
+
+# PCA encoding without automatic mean encoding
+list Xpca_wo_mean = pca_encode(Xbase, unit, , 0)
+print unit Xbase Xpca_wo_mean -o --range=70:80
+
+# SVD (low rank) encoding but return only first 2 components
+list Xsvd = low_rank_encode(Xbase, unit, 2)
+print unit Xbase Xsvd -o --range=70:80
+
+# Multinomial logistic regression coefficients (excluding intercept which is used for estimation)
+list Xmnl = mnl_encode(Xbase, unit, 1)
+print unit Xbase Xmnl -o --range=70:80
+```
+
+
+
 # Public Functions
 
 ## binary_encode
