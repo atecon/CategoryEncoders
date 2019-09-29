@@ -9,10 +9,13 @@ The mean, median, pca, low-rank and multinomial logit encoding techniques are in
 Binarize data (set feature values to 0 or 1) according to a threshold. Values greater than the threshold map to 1, while values less than or equal to the threshold map to 0. With the default threshold of 0, only positive values map to 1.
 
 ### Parameters:
-X			- list, List of series to which to apply the function
-threshold 	- scalar, Feature values below or equal to this are 				replaced by	0, above it by 1. (0.0 by default)
-suffix		- string, Add a suffix to the returned series' name 				(default value *_bin*)
-verbose		- bool, Print details or not (per default no printout)
+X	-- list, List of series to which to apply the function
+
+threshold -- scalar, Feature values below or equal to this are replaced by 0, above it by 1 (0.0 by default).
+
+suffix -- string, Add a suffix to the returned series' name (default value *_bin*)
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with binary values. The i-th series name takes the i-th input series' name plus the suffix *_bin* if not differently set.
@@ -22,9 +25,13 @@ List of named series with binary values. The i-th series name takes the i-th inp
 Encode categorical discrete integer features of a single series as a one-hot (binary) list of series. The encoder derives the categories based on the unique values of the input series.
 
 ### Parameters:
-X			- series, Series with discrete values to which to apply 			the function
-drop	 	- int, Decide whether to drop a resulting series. Per 				default no resulting series is droppped. For drop=1, the 			 highest value of X is omitted from the encoding. For drop=2			the lowest value of X is omitted from the encoding
-verbose		- bool, Print details or not (per default no printout)
+X -- series, Series with discrete values to which to apply the function
+
+drop -- int, Decide whether to drop a resulting series. Per default no resulting series is droppped.
+	* For drop=1, the highest value of X is omitted from the encoding.
+	* For drop=2, the lowest value of X is omitted from the encoding
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with binary values. The i-th series is named 'Dx_i' where 'x' refers to the name of input series X and 'i' to the i-th distinct value of X.
@@ -34,10 +41,13 @@ List of named series with binary values. The i-th series is named 'Dx_i' where '
 Compute category-wise, as identified by the discrete series G, mean values for each variable in list X.
 
 ### Parameters:
-X			- list, List of series to which to apply the function
-G 			- series, Discrete series refering to unique categories
-suffix		- string, Add a suffix to the returned series' name 				(default value *_mean*)
-verbose		- bool, Print details or not (per default no printout)
+X -- list, List of series to which to apply the function
+
+G -- series, Discrete series refering to unique categories
+
+suffix -- string, Add a suffix to the returned series' name (default value *_mean*)
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix *_mean* if not differently set.
@@ -47,10 +57,13 @@ List of named series with category-wise mean values. The i-th series name takes 
 Compute category-wise, as identified by the discrete series G, median values for each variable in list X.
 
 ### Parameters:
-X			- list, List of series to which to apply the function
-G 			- series, Discrete series refering to unique categories
-suffix		- string, Add a suffix to the returned series' name 				(default value *_mean*)
-verbose		- bool, Print details or not (per default no printout)
+X -- list, List of series to which to apply the function
+
+G -- series, Discrete series refering to unique categories
+
+suffix -- string, Add a suffix to the returned series' name (default value *_mean*)
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix *_median* if not differently set..
@@ -60,12 +73,17 @@ List of named series with category-wise median values. The i-th series name take
 Compute category-wise, as identified by the discrete series G, principle components using all information in list X.
 
 ### Parameters:
-X				- list, List of series to which to apply the function
-G 				- series, Discrete series identifying unique categories
-num_components	- int, Retrieve only the first n principle components 					(per default retrieve all)
-mean_encode 	- bool, Apply means-encoding on all X elemenets before					computing the principle components of these n-encoded					series.
-suffix			- string, Add a suffix to the returned series' name 				(default value *_pca*)
-verbose			- bool, Print details or not (per default no printout)
+X -- list, List of series to which to apply the function
+
+G -- series, Discrete series identifying unique categories
+
+num_components -- int, Retrieve only the first n principle components (per default retrieve all)
+
+mean_encode -- bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
+
+suffix -- string, Add a suffix to the returned series' name (default value *_pca*)
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix *_pca* if not differently set.
@@ -75,12 +93,17 @@ List of named series with group-wise principle component values. The i-th series
 Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
 
 ### Parameters:
-X				- list, List of k series to which to apply the function
-G 				- series, Discrete series identifying unique groups
-				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
-mean_encode 	- bool, Apply means-encoding on all X elemenets before 					computing the low-rank components of these 							mean-encoded series.
-suffix			- string, Add a suffix to the returned series' name 				(default value *_svd*)
-verbose			- bool, Print details or not (per default no printout)
+X -- list, List of k series to which to apply the function
+
+G -- series, Discrete series identifying unique groups
+
+num_components -- int, Retrieve only the first n columns of the left-singular value matrix (per default retrieve the first k columns)
+
+mean_encode -- bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
+
+suffix -- string, Add a suffix to the returned series' name (default value *_svd*)
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix *_svd* if not differently set.
@@ -90,12 +113,16 @@ List of named series with group-wise rank component values. The i-th series name
 Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
 
 ### Parameters:
-X				- list, List of k series to which to apply the function
-G 				- series, Discrete series identifying unique groups
-				num_components	- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
-mean_encode 	- bool, Apply means-encoding on all X elemenets before 					computing the low-rank components of these 							mean-encoded series.
-suffix			- string, Add a suffix to the returned series' name 				(default value *_mnl*)
-verbose			- bool, Print details or not (per default no printout)
+X -- list, List of k series to which to apply the function
+G -- series, Discrete series identifying unique groups
+
+num_components -- int, Retrieve only the first n columns of the left-singular value matrix (per default retrieve the first k columns)
+
+mean_encode -- bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
+
+suffix -- string, Add a suffix to the returned series' name (default value *_mnl*)
+
+verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
 List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix *_mnl* if not differently set.
