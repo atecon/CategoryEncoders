@@ -3,7 +3,7 @@
 <gretl-function-package name="CategoryEncoders" no-data-ok="true" minver="2018a">
 <author email="atecon@posteo.de">Artur Tarassow</author>
 <version>0.2</version>
-<date>2019-09-29</date>
+<date>2019-09-30</date>
 <description>Encoder based on categorical variables</description>
 <tags>C10</tags>
 <help>
@@ -30,14 +30,17 @@ Binarize data (set feature values to 0 or 1) according to a threshold. Values gr
 
 Parameters:
 -----------
-X
-- list, List of series to which to apply the function
-threshold
-- scalar, Feature values below or equal to this are replaced by	0, above it by 1. (0.0 by default)
-suffix
-- string, Add a suffix to the returned series' name default value &quot;_bin&quot;)
-verbose
-- bool, Print details or not (per default no printout)
+X:
+list, List of series to which to apply the function
+
+threshold:
+scalar, Feature values below or equal to this are replaced by 0, above it by 1. (0.0 by default)
+
+suffix:
+string, Add a suffix to the returned series' name default value &quot;_bin&quot;)
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -50,12 +53,14 @@ Encode categorical discrete integer features of a single series as a one-hot (bi
 
 Parameters:
 -----------
-X
-- series, Series with discrete values to which to apply the function
-drop
-- int, Decide whether to drop a resulting series. Per default no resulting series is droppped. For drop=1, the highest value of X is omitted from the encoding. For drop=2 the lowest value of X is omitted from the encoding
-verbose
-- bool, Print details or not (per default no printout)
+X:
+series, Series with discrete values to which to apply the function
+
+drop:
+int, Decide whether to drop a resulting series. Per default no resulting series is droppped. For drop=1, the highest value of X is omitted from the encoding. For drop=2 the lowest value of X is omitted from the encoding
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -68,14 +73,17 @@ Compute category-wise, as identified by the discrete series G, mean values for e
 
 Parameters:
 -----------
-X
-- list, List of series to which to apply the function
-G
-- series, Discrete series refering to unique categories
-suffix
-- string, Add a suffix to the returned series' name (default value &quot;_mean&quot;)
-verbose
-- bool, Print details or not (per default no printout)
+X:
+list, List of series to which to apply the function
+
+G:
+series, Discrete series refering to unique categories
+
+suffix:
+string, Add a suffix to the returned series' name (default value &quot;_mean&quot;)
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -88,14 +96,17 @@ Compute category-wise, as identified by the discrete series G, median values for
 
 Parameters:
 -----------
-X
-- list, List of series to which to apply the function
-G
-- series, Discrete series refering to unique categories
-suffix
-- string, Add a suffix to the returned series' name (default value &quot;_mean&quot;)
-verbose
-- bool, Print details or not (per default no printout)
+X:
+list, List of series to which to apply the function
+
+G:
+series, Discrete series refering to unique categories
+
+suffix:
+string, Add a suffix to the returned series' name (default value &quot;_mean&quot;)
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -108,18 +119,23 @@ Compute category-wise, as identified by the discrete series G, principle compone
 
 Parameters:
 -----------
-X
-- list, List of series to which to apply the function
-G
-- series, Discrete series identifying unique categories
-num_components
-- int, Retrieve only the first n principle components (per default retrieve all)
-mean_encode
-- bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
-suffix
-- string, Add a suffix to the returned series' name (default value &quot;_pca&quot;)
-verbose
-- bool, Print details or not (per default no printout)
+X:
+list, List of series to which to apply the function
+
+G:
+series, Discrete series identifying unique categories
+
+num_components:
+int, Retrieve only the first n principle components (per default retrieve all)
+
+mean_encode:
+bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
+
+suffix:
+string, Add a suffix to the returned series' name (default value &quot;_pca&quot;)
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -132,18 +148,23 @@ Compute category-wise, as identified by the discrete series G, left-singlular va
 
 Parameters:
 -----------
-X
-- list, List of k series to which to apply the function
-G
-- series, Discrete series identifying unique groups
-num_components
-- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
-mean_encode
-- bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
-suffix
-- string, Add a suffix to the returned series' name (default value &quot;_svd&quot;)
-verbose
-- bool, Print details or not (per default no printout)
+X:
+list, List of k series to which to apply the function
+
+G:
+series, Discrete series identifying unique groups
+
+num_components:
+int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+
+mean_encode:
+bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
+
+suffix:
+string, Add a suffix to the returned series' name (default value &quot;_svd&quot;)
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -156,18 +177,23 @@ Compute category-wise, as identified by the discrete series G, left-singlular va
 
 Parameters:
 -----------
-X
-- list, List of k series to which to apply the function
-G
-- series, Discrete series identifying unique groups
-num_components
-- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
-mean_encode
-- bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
-suffix
-- string, Add a suffix to the returned series' name (default value &quot;_mnl&quot;)
-verbose
-- bool, Print details or not (per default no printout)
+X:
+list, List of k series to which to apply the function
+
+G:
+series, Discrete series identifying unique groups
+
+num_components:
+int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
+
+mean_encode:
+bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
+
+suffix:
+string, Add a suffix to the returned series' name (default value &quot;_mnl&quot;)
+
+verbose:
+bool, Print details or not (per default no printout)
 
 Returns:
 --------
@@ -264,7 +290,7 @@ return R
  </params>
 <code>/* Group-wise median computation wrapper function */
 if !exists(suffix)
-  string suffix = &quot;&quot;
+  string suffix = &quot;median&quot;
 endif
 return means_or_median_encode(X, G, 1, suffix, verbose)
 </code>
@@ -284,7 +310,7 @@ return means_or_median_encode(X, G, 1, suffix, verbose)
  </params>
 <code>/* Group-wise mean computation wrapper function */
 if !exists(suffix)
-  string suffix = &quot;&quot;
+  string suffix = &quot;mean&quot;
 endif
 return means_or_median_encode(X, G, 0, suffix, verbose)
 </code>
@@ -471,7 +497,7 @@ return R
   <param name="use_median" type="bool" default="0" const="true">
 <description>Median instead of mean encoding</description>
   </param>
-  <param name="suffix" type="string">
+  <param name="suffix" type="string" const="true">
 <description>Suffix for returned series name</description>
   </param>
   <param name="verbose" type="bool" default="0" const="true">
@@ -486,9 +512,6 @@ if check==0
 endif
 string operation = &quot;mean&quot;
 operation = (use_median) ? &quot;median&quot; : operation
-if strlen(suffix)==0
-  string suffix = operation
-endif
 loop foreach i X -q
   list R += genseries(sprintf(&quot;%s_%s&quot;, varname(X.$i), suffix), series_with_groupwise_stats(X.$i, G, operation, verbose))
   if verbose

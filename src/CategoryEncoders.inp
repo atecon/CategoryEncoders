@@ -63,7 +63,7 @@ end function
 function list means_or_median_encode (const list X "List of series",
                                       const series G "Holding group IDs",
                                       const bool use_median[0] "Median instead of mean encoding",
-                                      string suffix "Suffix for returned series name",
+                                      const string suffix "Suffix for returned series name",
                                       const bool verbose[0] "Print details")
     /* Function actually computing means/median_encoder */
 
@@ -76,10 +76,6 @@ function list means_or_median_encode (const list X "List of series",
 
     string operation = "mean"
     operation = (use_median) ? "median" : operation
-
-    if strlen(suffix)==0
-        string suffix = operation
-    endif
 
     loop foreach i X -q
         list R += genseries(sprintf("%s_%s", varname(X.$i), suffix), \
@@ -99,9 +95,9 @@ function list median_encode (const list X "List of series",
                              string suffix[null] "Suffix for returned series name",
                              const bool verbose[0])
     /* Group-wise median computation wrapper function */
-
+    
     if !exists(suffix)
-        string suffix = ""
+        string suffix = "median"
     endif
 
     return means_or_median_encode(X, G, 1, suffix, verbose)
@@ -115,9 +111,9 @@ function list means_encode (const list X "List of series",
     /* Group-wise mean computation wrapper function */
 
     if !exists(suffix)
-        string suffix = ""
+        string suffix = "mean"
     endif
-
+    
     return means_or_median_encode(X, G, 0, suffix, verbose)
 end function
 
