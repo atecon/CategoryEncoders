@@ -136,7 +136,7 @@ function series series_with_groupwise_stats (const series X "Exogenous regressor
 
     series R = NA
     loop i=1..rows(groups) -q
-        catch smpl G==groups[i] --restrict --replace --quiet
+        catch smpl G == groups[i] --restrict --replace --quiet
         if $error
             if verbose
                 printf "\nWarning: No observation exists for group G=%d\n", groups[i]
@@ -159,8 +159,9 @@ function series series_with_groupwise_values (const series G,
 
     matrix groups = values(G)
     series R = NA
+
     loop i=1..rows(groups) -q
-        catch smpl G==groups[i] --restrict --replace --quiet
+        catch smpl G == groups[i] --restrict --replace --quiet
 
         if $error
             if verbose
@@ -172,7 +173,6 @@ function series series_with_groupwise_values (const series G,
         series R = V[i]
         smpl full			# For some reason --replace option does not work
     endloop
-    smpl full
 
     return R
 end function

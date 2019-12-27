@@ -1,0 +1,293 @@
+set verbose off
+clear
+include assertion.gfn
+
+
+
+string WD = "/home/at/git/CategoryEncoders/src"		# TODO: drop
+set workdir @WD
+
+include CategoryEncoders.inp --force
+nulldata 5 -p
+
+
+print "Start with ohe_encode()"
+series ser_1 = {1,0,0,1,1}
+series ser_2 = {NA,0,0,1,1}
+series ser_3 = {NA,0,0,NA,1}
+series ser_4 = NA
+series ser_5 = 1
+setinfo ser_1 --discrete
+setinfo ser_2 --discrete
+setinfo ser_3 --discrete
+setinfo ser_4 --discrete
+setinfo ser_5 --discrete
+
+list Lout = ohe_encode(ser_1, 0, 1)
+if !assertEqualNum(nelem(Lout), 2)
+    stop
+endif
+if !assertEqualNum(sum(Lout[1]), 2)
+    stop
+endif
+if !assertEqualNum(sum(Lout[2]), 3)
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_ohe_0")
+    stop
+endif
+if !assertEqualStr(varname(Lout[2]), "ser_1_ohe_1")
+    stop
+endif
+
+
+print "Start with ohe_encode() and drop first option"
+list Lout = ohe_encode(ser_1, 1, 1)
+if !assertEqualNum(nelem(Lout), 1)
+    stop
+endif
+if !assertEqualNum(sum(Lout[1]), 3)
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_ohe_1")
+    stop
+endif
+
+print "Start with ohe_encode() and drop last option"
+list Lout = ohe_encode(ser_1, 2, 1)
+if !assertEqualNum(nelem(Lout), 1)
+    stop
+endif
+if !assertEqualNum(sum(Lout[1]), 2)
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_ohe_0")
+    stop
+endif
+
+
+print "Start with binary_encode()"
+series ser_1 = {-1,0.5,0,1.1,-1.5}
+series ser_2 = {NA,0.5,0,1.1,-1.5}
+series ser_3 = {NA,0.5,0,NA,-1.5}
+series ser_4 = NA
+series ser_5 = 1
+
+list X = ser_1 ser_2 ser_3 ser_4 ser_5
+scalar threshold = 0.5
+scalar verbose = 1
+list Lout = binary_encode(X, threshold, , verbose)
+if !assertEqualNum(nelem(Lout), nelem(X))
+    stop
+endif
+if !assertEqualNum(sum(Lout[1]), 1)
+    stop
+endif
+if !assertEqualNum(sum(Lout[2]), 1)
+    stop
+endif
+if !assertEqualNum(sum(Lout[3]), 0)
+    stop
+endif
+if ok(assertEqualNum(sum(Lout[4]), 0))
+    stop
+endif
+if !assertEqualNum(sum(Lout[5]), 5)
+    stop
+endif
+
+if !assertEqualStr(varname(Lout[1]), "ser_1_bin")
+    stop
+endif
+if !assertEqualStr(varname(Lout[2]), "ser_2_bin")
+    stop
+endif
+if !assertEqualStr(varname(Lout[5]), "ser_5_bin")
+    stop
+endif
+
+if !assertEqualNum(nobs(Lout[1]), 5)
+    stop
+endif
+if !assertEqualNum(nobs(Lout[2]), 4)
+    stop
+endif
+if !assertEqualNum(nobs(Lout[3]), 3)
+    stop
+endif
+if !assertEqualNum(nobs(Lout[4]), 0)
+    stop
+endif
+if !assertEqualNum(nobs(Lout[5]), 5)
+    stop
+endif
+
+print "Start with binary_encode() + suffix"
+string suffix = "_foo123"
+list Lout = binary_encode(X, threshold, suffix, verbose)
+if !assertEqualStr(varname(Lout[1]), "ser_1@suffix")
+    stop
+endif
+if !assertEqualStr(varname(Lout[2]), "ser_2@suffix")
+    stop
+endif
+if !assertEqualStr(varname(Lout[5]), "ser_5@suffix")
+    stop
+endif
+
+
+
+print "Start with means_encode()"
+series groups = {1,1,2,2,1}
+setinfo groups --discrete
+series ser_1 = {-1,0.5,0,1.1,-1.5}
+series ser_2 = {NA,0.5,0,1.1,-1.5}
+series ser_3 = {NA,0.5,0,NA,-1.5}
+series ser_4 = NA
+series ser_5 = 1
+list X = ser_1 ser_2 ser_3 ser_4 ser_5
+scalar verbose = 0
+
+list Lout = means_encode(X, groups, , verbose)
+if !assertEqualNum(nelem(Lout), nelem(X))
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_mean")
+    stop
+endif
+if !assertEqualStr(varname(Lout[2]), "ser_2_mean")
+    stop
+endif
+if !assertEqualStr(varname(Lout[5]), "ser_5_mean")
+    stop
+endif
+
+# Check values for group 1
+smpl groups == 1 --restrict --replace
+if !assertAlmostEqualNum(mean(Lout[1]), -2/3)
+    stop
+endif
+if !assertEqualNum(mean(Lout[2]), -0.5)
+    stop
+endif
+if !assertEqualNum(mean(Lout[3]), -0.5)
+    stop
+endif
+if sum(ok(Lout[4]))
+    stop
+endif
+if !assertEqualNum(mean(Lout[5]), 1)
+    stop
+endif
+
+# Check values for group 2
+smpl groups == 2 --restrict --replace
+if !assertAlmostEqualNum(mean(Lout[1]), 0.55)
+    stop
+endif
+if !assertEqualNum(mean(Lout[2]), 0.55)
+    stop
+endif
+if !assertEqualNum(mean(Lout[3]), 0)
+    stop
+endif
+if sum(ok(Lout[4]))
+    stop
+endif
+if !assertEqualNum(mean(Lout[5]), 1)
+    stop
+endif
+
+
+
+print "Start with median_encode()"
+smpl full
+series groups = {1,1,2,2,1}
+setinfo groups --discrete
+series ser_1 = {-1,0.5,0,1.1,-1.5}
+series ser_2 = {NA,0.5,0,1.1,-1.5}
+series ser_3 = {NA,0.5,0,NA,-1.5}
+series ser_4 = NA
+series ser_5 = 1
+
+list X = ser_1 ser_2 ser_3 ser_4 ser_5
+
+scalar verbose = 0
+list Lout = median_encode(X, groups, , verbose)
+if !assertEqualNum(nelem(Lout), nelem(X))
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_median")
+    stop
+endif
+if !assertEqualStr(varname(Lout[2]), "ser_2_median")
+    stop
+endif
+if !assertEqualStr(varname(Lout[5]), "ser_5_median")
+    stop
+endif
+
+
+# Check values for group 1
+smpl groups == 1 --restrict --replace
+if !assertEqualNum(mean(Lout[1]), -1)
+    stop
+endif
+if !assertEqualNum(mean(Lout[2]), -0.5)
+    stop
+endif
+if !assertEqualNum(mean(Lout[3]), -0.5)
+    stop
+endif
+if sum(ok(Lout[4]))
+    stop
+endif
+if !assertEqualNum(mean(Lout[5]), 1)
+    stop
+endif
+
+# Check values for group 2
+smpl groups == 2 --restrict --replace
+if !assertAlmostEqualNum(mean(Lout[1]), 0.55)
+    stop
+endif
+if !assertEqualNum(mean(Lout[2]), 0.55)
+    stop
+endif
+if sum(ok(Lout[3]))			# Note: median is not computed if only a single valid obs. exists!
+    stop
+endif
+if sum(ok(Lout[4]))
+    stop
+endif
+if !assertEqualNum(mean(Lout[5]), 1)
+    stop
+endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+printf "\nInfo: All tests passed.\n"
+
+
+
+
+
