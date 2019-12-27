@@ -44,21 +44,20 @@ end function
 
 
 function list binary_encode (const list X "List of series",
-                             const scalar threshold[0] "Series values below or equal to this are replaced by 0, above it by 1.",
+                             const scalar threshold "X[i] <= threshold are set to 0, above it by 1.",
                              string suffix[null] "Suffix for returned series name",
                              const bool verbose[0] "Print details")
-    /* Binarize data (set feature values to 0 or 1) according to a threshold */
+    /* Binarize data (set feature values to 0 or 1) according to a threshold. */
+
+    list R = null
 
     if !exists(suffix)
         string suffix = "_bin"
     endif
 
-    list R = null
     loop foreach i X -q
         string vname = sprintf("%s%s", varname(X.$i), suffix)
-        series @vname = NA
-        @vname = 0*(X.$i <= threshold) || (X.$i > threshold)
-        list R += @vname
+        list R += genseries(vname, 0*(X.$i <= threshold) || (X.$i > threshold))
     endloop
 
     return R
