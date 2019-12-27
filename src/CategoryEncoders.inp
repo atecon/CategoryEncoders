@@ -1,37 +1,42 @@
 function list ohe_encode (const series X "Discrete series",
-                          const bool drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
+                          const scalar drop[0:2:1] "0=drop none, 1=drop-first, 2=drop-last",
                           const bool verbose[0] "Print details")
     /* One-hot encoding aka 'dummification' of categorical variable */
 
     list R = null
+    matrix X_values = values(X)
 
-    scalar check = series_g_isdiscrete(X)
-    if check==0
+    if !series_g_isdiscrete(X)
         return R
     endif
 
     string to_be_droppped = ""
-    to_be_droppped = (drop==1) ? "--drop-first" : to_be_droppped
-    to_be_droppped = (drop==2) ? "--drop-last" : to_be_droppped
-
+    to_be_droppped = (drop == 1) ? "--drop-first" : to_be_droppped
+    to_be_droppped = (drop == 2) ? "--drop-last" : to_be_droppped
+    
     dummify X @to_be_droppped
     list R += D*
 
-    # Rename returned list of OHE series
-    matrix X_values = values(X)
+    # dependent on drop(1/2), either the 1st or last column of X_values
+    # must be droppped to ensure right naming in the following
+    X_values = (drop == 1) ? X_values[-1] : X_values
+    X_values = (drop == 2) ? X_values[-rows(X_values)] : X_values
 
+    # Rename returned list of OHE series
     loop foreach i R -q
         string current_name = varnames(R)[i]
         string new_name = sprintf("%s_ohe_%d", argname(X), X_values[i])
         rename @current_name @new_name
     endloop
 
-    if verbose
-        if drop==1
-            printf "\nInfo: The highest value of variable %s is omitted from the encoding.\n", argname(X)
-        elif drop==2
-            printf "\nInfo: The lowest value of variable %s is omitted from the encoding.\n", argname(X)
+    if verbose && drop
+        if drop == 1
+            string which = "highest"
+        elif drop == 2
+            string which = "lowest"
         endif
+        printf "\nInfo: The %s value of variable %s is omitted \n\
+          from the encoding.\n", which, argname(X)
     endif
 
     return R
@@ -95,7 +100,7 @@ function list median_encode (const list X "List of series",
                              string suffix[null] "Suffix for returned series name",
                              const bool verbose[0])
     /* Group-wise median computation wrapper function */
-    
+
     if !exists(suffix)
         string suffix = "median"
     endif
@@ -113,7 +118,7 @@ function list means_encode (const list X "List of series",
     if !exists(suffix)
         string suffix = "mean"
     endif
-    
+
     return means_or_median_encode(X, G, 0, suffix, verbose)
 end function
 
