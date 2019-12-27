@@ -86,7 +86,8 @@ function list means_or_median_encode (const list X "List of series",
           series_with_groupwise_stats(X.$i, G, operation, verbose))
 
         if verbose
-            printf "\nInfo: Generated group-wise %s series %s.\n", operation, varname(X.$i)
+            printf "\nInfo: Generated group-wise %s series %s_%s.\n", \
+              operation, varname(X.$i), operation
         endif
     endloop
 
