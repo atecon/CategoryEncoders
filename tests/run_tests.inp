@@ -8,6 +8,8 @@ string WD = "/home/at/git/CategoryEncoders/src"		# TODO: drop
 set workdir @WD
 
 include CategoryEncoders.inp --force
+
+set seed 1234
 nulldata 5 -p
 
 
@@ -162,6 +164,23 @@ if !assertEqualStr(varname(Lout[5]), "ser_5_mean")
     stop
 endif
 
+if !assertAlmostEqualNum(nobs(Lout[1]), 5)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[2]), 5)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[3]), 5)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[4]), 0)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[5]), 5)
+    stop
+endif
+
+
 # Check values for group 1
 smpl groups == 1 --restrict --replace
 if !assertAlmostEqualNum(mean(Lout[1]), -2/3)
@@ -227,6 +246,22 @@ if !assertEqualStr(varname(Lout[5]), "ser_5_median")
     stop
 endif
 
+if !assertAlmostEqualNum(nobs(Lout[1]), 5)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[2]), 5)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[3]), 3)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[4]), 0)
+    stop
+endif
+if !assertAlmostEqualNum(nobs(Lout[5]), 5)
+    stop
+endif
+
 
 # Check values for group 1
 smpl groups == 1 --restrict --replace
@@ -262,11 +297,34 @@ if sum(ok(Lout[4]))
 endif
 if !assertEqualNum(mean(Lout[5]), 1)
     stop
+    
 endif
 
 
 
 
+print "Start with pca_encode()"
+
+smpl full
+series groups = {1,1,2,2,1}
+setinfo groups --discrete
+series ser_1 = normal()
+series ser_2 = normal()
+list X = ser_1 ser_2 
+scalar num_components = 0
+scalar mean_encode = 0
+string suffix = ""
+scalar verbose = 1
+
+list Lout = pca_encode(X, groups, num_components, mean_encode, suffix, verbose)
+print Lout -o
+
+if !assertEqualNum(nelem((Lout), 2)
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_median")
+    stop
+endif
 
 
 
