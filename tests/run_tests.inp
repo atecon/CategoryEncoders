@@ -315,17 +315,48 @@ scalar num_components = 0
 scalar mean_encode = 0
 string suffix = ""
 scalar verbose = 1
-
 list Lout = pca_encode(X, groups, num_components, mean_encode, suffix, verbose)
-print Lout -o
-
-if !assertEqualNum(nelem((Lout), 2)
+if !assertEqualNum(nelem(Lout), 2)
     stop
 endif
-if !assertEqualStr(varname(Lout[1]), "ser_1_median")
+if !assertEqualStr(varname(Lout[1]), "ser_1_pca")
+    stop
+endif
+if !assertEqualStr(varname(Lout[2]), "ser_2_pca")
     stop
 endif
 
+if !assertEqualNum(nobs(Lout[1]), 5)
+    stop
+endif
+if !assertEqualNum(nobs(Lout[2]), 5)
+    stop
+endif
+
+if !assertAlmostEqualNum(sum(Lout[1]), 0)
+    stop
+endif
+if !assertAlmostEqualNum(sum(Lout[2]), 0)
+    stop
+endif
+
+
+print "pca_encode() with single factor + own suffix"
+scalar num_components = 1
+string suffix = "_foo"
+list Lout = pca_encode(X, groups, num_components, mean_encode, suffix, verbose)
+if !assertEqualNum(nelem(Lout), 1)
+    stop
+endif
+if !assertEqualStr(varname(Lout[1]), "ser_1_foo")
+    stop
+endif
+if !assertEqualNum(nobs(Lout[1]), 5)
+    stop
+endif
+if !assertAlmostEqualNum(sum(Lout[1]), 0)
+    stop
+endif
 
 
 
