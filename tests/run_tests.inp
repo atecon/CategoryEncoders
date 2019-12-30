@@ -283,7 +283,7 @@ endif
 
 # Check values for group 2
 smpl groups == 2 --restrict --replace
-if !assert_almost_equal_num(mean(Lout[1]), 0.55)
+if !assert_almost_equal_num(mean(Lout[1]), 0.55, 1e-2)
     stop
 endif
 if !assert_equal_num(mean(Lout[2]), 0.55)
@@ -297,20 +297,19 @@ if sum(ok(Lout[4]))
 endif
 if !assert_equal_num(mean(Lout[5]), 1)
     stop
-    
+
 endif
 
 
 
 
 print "Start with pca_encode()"
-
 smpl full
 series groups = {1,1,2,2,1}
 setinfo groups --discrete
 series ser_1 = normal()
 series ser_2 = normal()
-list X = ser_1 ser_2 
+list X = ser_1 ser_2
 scalar num_components = 0
 scalar mean_encode = 0
 string suffix = ""
@@ -361,6 +360,124 @@ endif
 
 
 
+
+print "Start with low_rank_encode()"
+smpl full
+series groups = {1,1,2,2,1}
+setinfo groups --discrete
+series ser_1 = normal()
+series ser_2 = normal()
+list X = ser_1 ser_2
+scalar num_components = 0
+scalar mean_encode = 0
+string suffix = ""
+scalar verbose = 1
+list Lout = low_rank_encode(X, groups, num_components, mean_encode, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 2)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_svd")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ser_2_svd")
+    stop
+endif
+
+if !assert_equal_num(nobs(Lout[1]), 5)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[2]), 5)
+    stop
+endif
+
+if !assert_almost_equal_num(sum(Lout[1]), -1.14, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(sum(Lout[2]), -0.023, 1e-3)
+    stop
+endif
+
+
+print "Start with low_rank_encode() with single factor + own suffix"
+scalar num_components = 1
+string suffix = "_foo"
+list Lout = low_rank_encode(X, groups, num_components, mean_encode, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 1)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
+    stop
+endif
+if !assert_equal_num(nobs(Lout[1]), 5)
+    stop
+endif
+if !assert_almost_equal_num(sum(Lout[1]), -1.14, 1e-3)
+    stop
+endif
+
+
+
+print "Start with mnl_encode()"
+#nulldata 50 -p
+series groups = randgen(i,1,2)
+setinfo groups --discrete
+series ser_1 = normal()
+series ser_2 = normal()
+list X = ser_1 ser_2
+scalar mean_encode = 1
+string suffix = ""
+scalar verbose = 1
+list Lout = mnl_encode(X, groups, suffix, verbose)
+
+if !assert_equal_num(nelem(Lout), 2)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_mnl")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ser_2_mnl")
+    stop
+endif
+
+if !assert_equal_num(nobs(Lout[1]), 5)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[2]), 5)
+    stop
+endif
+if !assert_almost_equal_num(sum(Lout[1]), 2.668, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(sum(Lout[2]), 2.244, 1e-3)
+    stop
+endif
+
+
+print "mnl_encode() + own suffix"
+string suffix = "_foo"
+list Lout = mnl_encode(X, groups, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 2)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ser_2_foo")
+    stop
+endif
+
+if !assert_equal_num(nobs(Lout[1]), 5)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[2]), 5)
+    stop
+endif
+if !assert_almost_equal_num(sum(Lout[1]), 2.668, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(sum(Lout[2]), 2.244, 1e-3)
+    stop
+endif
 
 
 
