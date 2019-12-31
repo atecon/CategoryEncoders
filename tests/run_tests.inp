@@ -10,9 +10,18 @@ set workdir @WD
 include CategoryEncoders.inp --force
 
 set seed 1234
-nulldata 5 -p
+nulldata 6 -p
 
+# Series 1 to 3 are using exactly the same values as are used in Athey et al. (2019)
+series groups = {1,1,1,2,2,2}
+setinfo groups --discrete
+series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
+series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
+series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
+series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
+series ser_5 = 1
 
+/*
 print "Start with ohe_encode()"
 series ser_1 = {1,0,0,1,1}
 series ser_2 = {NA,0,0,1,1}
@@ -136,20 +145,12 @@ endif
 if !assert_equal_str(varname(Lout[5]), "ser_5@suffix")
     stop
 endif
-
+*/
 
 
 print "Start with means_encode()"
-series groups = {1,1,2,2,1}
-setinfo groups --discrete
-series ser_1 = {-1,0.5,0,1.1,-1.5}
-series ser_2 = {NA,0.5,0,1.1,-1.5}
-series ser_3 = {NA,0.5,0,NA,-1.5}
-series ser_4 = NA
-series ser_5 = 1
 list X = ser_1 ser_2 ser_3 ser_4 ser_5
-scalar verbose = 0
-
+scalar verbose = 1
 list Lout = means_encode(X, groups, , verbose)
 if !assert_equal_num(nelem(Lout), nelem(X))
     stop
@@ -164,35 +165,35 @@ if !assert_equal_str(varname(Lout[5]), "ser_5_mean")
     stop
 endif
 
-if !assert_almost_equal_num(nobs(Lout[1]), 5)
+if !assert_equal_num(nobs(Lout[1]), 6)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[2]), 5)
+if !assert_equal_num(nobs(Lout[2]), 6)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[3]), 5)
+if !assert_equal_num(nobs(Lout[3]), 6)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[4]), 0)
+if !assert_equal_num(nobs(Lout[4]), 3)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[5]), 5)
+if !assert_equal_num(nobs(Lout[5]), 6)
     stop
 endif
 
 
 # Check values for group 1
 smpl groups == 1 --restrict --replace
-if !assert_almost_equal_num(mean(Lout[1]), -2/3)
+if !assert_almost_equal_num(mean(Lout[1]), 0.93)
     stop
 endif
-if !assert_equal_num(mean(Lout[2]), -0.5)
+if !assert_equal_num(mean(Lout[2]), 0.46)
     stop
 endif
-if !assert_equal_num(mean(Lout[3]), -0.5)
+if !assert_almost_equal_num(mean(Lout[3]), 0.296, 1e-3)
     stop
 endif
-if sum(ok(Lout[4]))
+if !assert_almost_equal_num(mean(Lout[4]), 0.125, 1e-3)
     stop
 endif
 if !assert_equal_num(mean(Lout[5]), 1)
@@ -201,13 +202,13 @@ endif
 
 # Check values for group 2
 smpl groups == 2 --restrict --replace
-if !assert_almost_equal_num(mean(Lout[1]), 0.55)
+if !assert_almost_equal_num(mean(Lout[1]), 0.333, 1e-3)
     stop
 endif
-if !assert_equal_num(mean(Lout[2]), 0.55)
+if !assert_almost_equal_num(mean(Lout[2]), 0.726, 1e-3)
     stop
 endif
-if !assert_equal_num(mean(Lout[3]), 0)
+if !assert_almost_equal_num(mean(Lout[3]), 0.496, 1e-3)
     stop
 endif
 if sum(ok(Lout[4]))
@@ -221,18 +222,10 @@ endif
 
 print "Start with median_encode()"
 smpl full
-series groups = {1,1,2,2,1}
-setinfo groups --discrete
-series ser_1 = {-1,0.5,0,1.1,-1.5}
-series ser_2 = {NA,0.5,0,1.1,-1.5}
-series ser_3 = {NA,0.5,0,NA,-1.5}
-series ser_4 = NA
-series ser_5 = 1
-
 list X = ser_1 ser_2 ser_3 ser_4 ser_5
-
-scalar verbose = 0
+scalar verbose = 1
 list Lout = median_encode(X, groups, , verbose)
+
 if !assert_equal_num(nelem(Lout), nelem(X))
     stop
 endif
@@ -246,35 +239,34 @@ if !assert_equal_str(varname(Lout[5]), "ser_5_median")
     stop
 endif
 
-if !assert_almost_equal_num(nobs(Lout[1]), 5)
+if !assert_equal_num(nobs(Lout[1]), 6)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[2]), 5)
+if !assert_equal_num(nobs(Lout[2]), 6)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[3]), 3)
+if !assert_equal_num(nobs(Lout[3]), 6)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[4]), 0)
+if !assert_equal_num(nobs(Lout[4]), 3)
     stop
 endif
-if !assert_almost_equal_num(nobs(Lout[5]), 5)
+if !assert_equal_num(nobs(Lout[5]), 6)
     stop
 endif
-
 
 # Check values for group 1
 smpl groups == 1 --restrict --replace
-if !assert_equal_num(mean(Lout[1]), -1)
+if !assert_almost_equal_num(mean(Lout[1]), 0.95)
     stop
 endif
-if !assert_equal_num(mean(Lout[2]), -0.5)
+if !assert_equal_num(mean(Lout[2]), 0.53)
     stop
 endif
-if !assert_equal_num(mean(Lout[3]), -0.5)
+if !assert_almost_equal_num(mean(Lout[3]), 0.2, 1e-3)
     stop
 endif
-if sum(ok(Lout[4]))
+if !assert_almost_equal_num(mean(Lout[4]), 0.125, 1e-3)
     stop
 endif
 if !assert_equal_num(mean(Lout[5]), 1)
@@ -283,13 +275,13 @@ endif
 
 # Check values for group 2
 smpl groups == 2 --restrict --replace
-if !assert_almost_equal_num(mean(Lout[1]), 0.55, 1e-2)
+if !assert_almost_equal_num(mean(Lout[1]), 0.28, 1e-3)
     stop
 endif
-if !assert_equal_num(mean(Lout[2]), 0.55)
+if !assert_almost_equal_num(mean(Lout[2]), 0.69, 1e-3)
     stop
 endif
-if sum(ok(Lout[3]))			# Note: median is not computed if only a single valid obs. exists!
+if !assert_almost_equal_num(mean(Lout[3]), 0.4, 1e-3)
     stop
 endif
 if sum(ok(Lout[4]))
@@ -297,24 +289,23 @@ if sum(ok(Lout[4]))
 endif
 if !assert_equal_num(mean(Lout[5]), 1)
     stop
-
 endif
 
 
 
-# TODO: Check behavior of NAs exist!
 print "Start with pca_encode()"
 smpl full
-series groups = {1,1,2,2,1}
-setinfo groups --discrete
-series ser_1 = normal()
-series ser_2 = normal()
-list X = ser_1 ser_2
+list X = ser_1 ser_2 ser_3 ser_5
 scalar num_components = 0
-scalar mean_encode = 0
 string suffix = ""
 scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, mean_encode, suffix, verbose)
+list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+print Lout -o
+stop
+print X -o
+list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+print Lout -o
+
 if !assert_equal_num(nelem(Lout), 2)
     stop
 endif
@@ -332,32 +323,98 @@ if !assert_equal_num(nobs(Lout[2]), 5)
     stop
 endif
 
-if !assert_almost_equal_num(sum(Lout[1]), 0)
+if !assert_equal_num(rows(values(Lout[1])), 2)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[2]), 0)
+if !assert_equal_num(rows(values(Lout[2])), 2)
+    stop
+endif
+
+if !assert_almost_equal_num(values(Lout[1])[1], -1.549, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[1])[2], 1.032796, 1e-3)
+    stop
+endif
+if !assert_equal_num(values(Lout[2])[1], 0)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
     stop
 endif
 
 
-print "pca_encode() with single factor + own suffix"
+print "pca_encode() with single factor + own suffix + mean_encode"
 scalar num_components = 1
+scalar verbose = 1
 string suffix = "_foo"
-list Lout = pca_encode(X, groups, num_components, mean_encode, suffix, verbose)
+list Lout = pca_encode(X, groups, num_components, suffix, verbose)
 if !assert_equal_num(nelem(Lout), 1)
     stop
 endif
 if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
     stop
 endif
+if !assert_equal_num(rows(values(Lout[1])), 2)
+    stop
+endif
+
+if !assert_almost_equal_num(values(Lout[1])[1], -1.549, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[1])[2], 1.032796, 1e-3)
+    stop
+endif
+
+  
+
+print "Start with pca_encode() + NA value in X"
+smpl full
+series groups = {1,1,2,2,1}
+setinfo groups --discrete
+series ser_1 = {-0.5,NA,0.7,1.1, 0.3}
+series ser_2 = {0.5,0.9,1.7,-2.1, -0.3}
+list X = ser_1 ser_2
+scalar num_components = 0
+string suffix = ""
+scalar verbose = 1
+list Lout = pca_encode(X, groups, num_components, , suffix, verbose)
+if !assert_equal_num(nelem(Lout), 2)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_pca")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ser_2_pca")
+    stop
+endif
+
 if !assert_equal_num(nobs(Lout[1]), 5)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[1]), 0)
+if !assert_equal_num(nobs(Lout[2]), 5)
     stop
 endif
 
+if !assert_equal_num(rows(values(Lout[1])), 2)
+    stop
+endif
+if !assert_equal_num(rows(values(Lout[2])), 2)
+    stop
+endif
 
+if !assert_almost_equal_num(values(Lout[1])[1], -1.549, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[1])[2], 1.032796, 1e-3)
+    stop
+endif
+if !assert_equal_num(values(Lout[2])[1], 0)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
+    stop
+endif
 
 
 
@@ -365,14 +422,15 @@ print "Start with low_rank_encode()"
 smpl full
 series groups = {1,1,2,2,1}
 setinfo groups --discrete
-series ser_1 = normal()
-series ser_2 = normal()
+series ser_1 = {-0.5,0.6,0.7,1.1, 0.3}
+series ser_2 = {0.5,0.9,1.7,-2.1, -0.3}
 list X = ser_1 ser_2
 scalar num_components = 0
 scalar mean_encode = 0
 string suffix = ""
 scalar verbose = 1
 list Lout = low_rank_encode(X, groups, num_components, mean_encode, suffix, verbose)
+print Lout -o
 if !assert_equal_num(nelem(Lout), 2)
     stop
 endif
@@ -419,7 +477,8 @@ endif
 
 print "Start with mnl_encode()"
 #nulldata 50 -p
-series groups = randgen(i,1,2)
+#series groups = randgen(i,1,2)
+series groups = {1,1,2,2,1}
 setinfo groups --discrete
 series ser_1 = normal()
 series ser_2 = normal()
@@ -445,10 +504,10 @@ endif
 if !assert_equal_num(nobs(Lout[2]), 5)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[1]), 2.668, 1e-3)
+if !assert_almost_equal_num(sum(Lout[1]), -341.356, 1e-3)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[2]), 2.244, 1e-3)
+if !assert_almost_equal_num(sum(Lout[2]), -707.717, 1e-3)
     stop
 endif
 
@@ -472,12 +531,13 @@ endif
 if !assert_equal_num(nobs(Lout[2]), 5)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[1]), 2.668, 1e-3)
+if !assert_almost_equal_num(sum(Lout[1]), -341.356, 1e-3)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[2]), 2.244, 1e-3)
+if !assert_almost_equal_num(sum(Lout[2]), -707.717, 1e-3)
     stop
 endif
+
 
 
 

@@ -176,15 +176,27 @@ function series series_with_groupwise_values (const series G,
     return R
 end function
 
-
+function scalar xlist_member_isconst (const list X)
+    /* Checks of any series of X is a constant. */
+    
+    scalar ret = 0
+    loop foreach i X -q
+        if isconst(X.$i)
+            ret++
+            printf "\nError: pca_encode() does not work if any regressor is constant."
+            break
+        endif
+    endloop
+    
+    return ret    
+end function
 
 function list pca_encode (const list X "Exogenous regressors of groupe-wise means",
                           const series G "Holding group IDs",
                           const int num_components[0::0] "Retrieve only first n PCs",
-                          const bool mean_encode[1] "Run means_encode()",
-      string suffix[null] "Suffix for returned series name",
-      const bool verbose[0])
-    /* Principal components anaylsis. */
+                          string suffix[null] "Suffix for returned series name",
+                          const bool verbose[0])
+    /* Principal components anaylsis. Running mean_encode() on X is highly recommended. */
 
     list R = null
     list PC = null
@@ -195,13 +207,11 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
     strings xnames = varnames(X)
 
     if !series_g_isdiscrete(G) || !xlist_has_at_least_two_members(X) || \
-          !check_num_components(X, num_components)
+          !check_num_components(X, num_components) || xlist_member_isconst(X)
         return R
     endif
 
-    if mean_encode
-        list X = means_encode(X, G)
-    endif
+    list X = means_encode(X, G)
 
     if num_components
         string save_opt = sprintf("--save=%d", num_components)
@@ -213,6 +223,7 @@ function list pca_encode (const list X "Exogenous regressors of groupe-wise mean
 
     pca X @save_opt @verbose_opt
     list PC += PC*
+    print PC -o
 
     scalar counter = 0
     loop foreach i X -q
@@ -234,9 +245,8 @@ end function
 function list low_rank_encode (list X "Exogenous regressors of groupe-wise means",
                                const series G "Holding group IDs",
                                const int num_components[0::0] "Retrieve only first n PCs",
-                               const bool mean_encode[1] "Run means_encode()",
-      string suffix[null] "Suffix for returned series name",
-      const bool verbose[0])
+                               string suffix[null] "Suffix for returned series name",
+                               const bool verbose[0])
     /* SVD based encoding */
 
     list R = null
@@ -251,14 +261,13 @@ function list low_rank_encode (list X "Exogenous regressors of groupe-wise means
         return R
     endif
 
-    if mean_encode
-        list X = means_encode(X, G)
-    endif
+    list X = means_encode(X, G)
 
     smpl G X --no-missing
 
     #matrix sv = svd({X}, &U, &V)				# slower than tall_svd()
     matrix sv = tall_svd({X}, &U, &V)
+    print U
     scalar counter = 0
     loop foreach i X -q
         list R += genseries(sprintf("%s%s", xnames[i], suffix), U[,i])
