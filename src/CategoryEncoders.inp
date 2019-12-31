@@ -48,7 +48,7 @@ function list binary_encode (const list X "List of series",
     /* Binarize data (set feature values to 0 or 1) according to a threshold. */
 
     list R = null
-   
+
     if !exists(suffix)
         string suffix = "_bin"
     endif
@@ -184,7 +184,9 @@ function list pca_encode (const list X "Exogenous regressors",
 
     list R = null
     list PC = null
-    if !exists(suffix) || !strlen(suffix)
+    if !exists(suffix)
+        string suffix = "_pca"
+    elif !strlen(suffix)
         string suffix = "_pca"
     endif
     string verbose_opt = get_verbose_opt(verbose)
@@ -236,7 +238,9 @@ function list low_rank_encode (list X "Exogenous regressors",
     list R = null
     matrix U
     matrix V
-    if !exists(suffix) || !strlen(suffix)
+    if !exists(suffix)
+        string suffix = "_svd"
+    elif !strlen(suffix)
         string suffix = "_svd"
     endif
     strings xnames = varnames(X)
@@ -278,7 +282,9 @@ function list mnl_encode (const list X "Exogenous regressors",
     reference category which are, however, not returned by gretl. */
 
     list R = null
-    if !exists(suffix) || !strlen(suffix)
+    if !exists(suffix)
+        string suffix = "_mnl"
+    elif !strlen(suffix)
         string suffix = "_mnl"
     endif
     string verbose_opt = get_verbose_opt(verbose)

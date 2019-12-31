@@ -325,10 +325,8 @@ print "Start with pca_encode()"
 smpl full
 list X = ser_1 ser_2 ser_3
 scalar num_components = 0
-string suffix = ""
 scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, suffix, verbose)
-
+list Lout = pca_encode(X, groups, num_components, ,verbose)
 if !assert_equal_num(nelem(Lout), 3)
     stop
 endif
@@ -381,7 +379,7 @@ endif
 print "pca_encode() with constant series"
 list X = ser_1 ser_2 ser_3 ser_5
 scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+list Lout = pca_encode(X, groups, num_components, , verbose)
 if !assert_equal_num(nelem(Lout), 0)
     stop
 endif
@@ -420,9 +418,8 @@ print "Start with pca_encode() + NA value in X"
 smpl full
 list X = ser_1 ser_2 ser_3 ser_6
 scalar num_components = 0
-string suffix = ""
 scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+list Lout = pca_encode(X, groups, num_components, , verbose)
 
 if !assert_equal_num(nelem(Lout), 4)
     stop
@@ -485,9 +482,8 @@ print "Start with low_rank_encode()"
 smpl full
 list X = ser_1 ser_2 ser_3
 scalar num_components = 0
-string suffix = ""
 scalar verbose = 1
-list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+list Lout = low_rank_encode(X, groups, num_components, , verbose)
 
 if !assert_equal_num(nelem(Lout), 3)
     stop
@@ -603,9 +599,8 @@ endif
 
 print "Start with mnl_encode()"
 list X = ser_1 ser_2 ser_3
-string suffix = ""
 scalar verbose = 1
-list Lout = mnl_encode(X, groups, suffix, verbose)
+list Lout = mnl_encode(X, groups, , verbose)
 
 if !assert_equal_num(nelem(Lout), 3)
     stop
@@ -654,9 +649,8 @@ endif
 print "Start with mnl_encode() + NA values for a complete group"
 smpl full
 list X = ser_1 ser_2 ser_3 ser_4
-string suffix = ""
 scalar verbose = 1
-list Lout = mnl_encode(X, groups, suffix, verbose)
+list Lout = mnl_encode(X, groups, , verbose)
 if !assert_equal_num(nelem(Lout), 0)
     stop
 endif
@@ -665,9 +659,8 @@ endif
 print "Start with mnl_encode() + NA values for a single obs."
 smpl full
 list X = ser_1 ser_2 ser_3 ser_6
-string suffix = ""
 scalar verbose = 1
-list Lout = mnl_encode(X, groups, suffix, verbose)
+list Lout = mnl_encode(X, groups, , verbose)
 if !assert_equal_num(nelem(Lout), 0)
     stop
 endif
@@ -676,9 +669,8 @@ endif
 print "Start with mnl_encode() + const series"
 smpl full
 list X = ser_1 ser_2 ser_3 ser_5
-string suffix = ""
 scalar verbose = 1
-list Lout = mnl_encode(X, groups, suffix, verbose)
+list Lout = mnl_encode(X, groups, , verbose)
 if !assert_equal_num(nelem(Lout), 0)
     stop
 endif
