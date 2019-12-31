@@ -13,7 +13,6 @@ setinfo unit --discrete
 list Xbase = density wcon
 
 
-
 # One-hot encoding (aka dummifying)
 list OHE = ohe_encode(unit)
 print unit OHE -o --range=70:80
@@ -30,12 +29,12 @@ print unit Xbase Xpmean -o --range=70:80
 list Xpmedian = median_encode(Xbase, unit)
 print unit Xbase Xpmedian -o --range=70:80
 
-# PCA encoding with automatic mean encoding
-list Xpca = pca_encode(Xbase, unit)			# means_encoding done per default
+# PCA encoding
+list Xpca = pca_encode(Xbase, unit)
 print unit Xbase Xpca -o --range=70:80
 
-# PCA encoding without automatic mean encoding
-list Xpca_wo_mean = pca_encode(Xbase, unit, , 0)
+# PCA encoding
+list Xpca_wo_mean = pca_encode(Xbase, unit)
 print unit Xbase Xpca_wo_mean -o --range=70:80
 
 # SVD (low rank) encoding but return only first 2 components

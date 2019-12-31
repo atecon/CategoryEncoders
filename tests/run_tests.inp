@@ -1,9 +1,6 @@
 set verbose off
 clear
 
-string WD = "/home/at/git/CategoryEncoders/src"		# TODO: drop
-set workdir @WD
-
 include CategoryEncoders.inp --force
 include assertion.gfn
 
@@ -69,7 +66,6 @@ endif
 
 print "Start with ohe_encode() and drop last option"
 list Lout = ohe_encode(ohe_ser_1, 2, 1)
-print Lout -o
 if !assert_equal_num(nelem(Lout), 1)
     stop
 endif
@@ -106,7 +102,6 @@ endif
 
 print "Start with ohe_encode() + constant series"
 list Lout = ohe_encode(ohe_ser_5, 0, 1)
-print Lout -o
 if !assert_equal_num(nelem(Lout), 0)
     stop
 endif
@@ -117,7 +112,7 @@ print "Start with binary_encode()"
 list X = bin_ser_1 bin_ser_2 bin_ser_3 bin_ser_4 bin_ser_5
 scalar threshold = 0.5
 scalar verbose = 1
-list Lout = binary_encode(X, threshold, , verbose)
+list Lout = binary_encode(X, threshold)
 if !assert_equal_num(nelem(Lout), nelem(X))
     stop
 endif
@@ -137,47 +132,48 @@ if !assert_equal_num(sum(Lout[5]), 6)
     stop
 endif
 
-** HIER WEITERMACHEN *** 
-
-if !assert_equal_str(varname(Lout[1]), "ser_1_bin")
+if !assert_equal_str(varname(Lout[1]), "bin_ser_1_bin")
     stop
 endif
-if !assert_equal_str(varname(Lout[2]), "ser_2_bin")
+if !assert_equal_str(varname(Lout[2]), "bin_ser_2_bin")
     stop
 endif
-if !assert_equal_str(varname(Lout[5]), "ser_5_bin")
+if !assert_equal_str(varname(Lout[5]), "bin_ser_5_bin")
     stop
 endif
 
-if !assert_equal_num(nobs(Lout[1]), 5)
+if !assert_equal_num(nobs(Lout[1]), 6)
     stop
 endif
-if !assert_equal_num(nobs(Lout[2]), 4)
+if !assert_equal_num(nobs(Lout[2]), 5)
     stop
 endif
-if !assert_equal_num(nobs(Lout[3]), 3)
+if !assert_equal_num(nobs(Lout[3]), 4)
     stop
 endif
 if !assert_equal_num(nobs(Lout[4]), 0)
     stop
 endif
-if !assert_equal_num(nobs(Lout[5]), 5)
+if !assert_equal_num(nobs(Lout[5]), 6)
     stop
 endif
 
+
 print "Start with binary_encode() + suffix"
-string suffix = "_foo123"
-list Lout = binary_encode(X, threshold, suffix, verbose)
-if !assert_equal_str(varname(Lout[1]), "ser_1@suffix")
+string suffix = "_foo"
+list Lout = binary_encode(X, threshold, suffix)
+if !assert_equal_num(nelem(Lout), nelem(X))
     stop
 endif
-if !assert_equal_str(varname(Lout[2]), "ser_2@suffix")
+if !assert_equal_str(varname(Lout[1]), "bin_ser_1_foo")
     stop
 endif
-if !assert_equal_str(varname(Lout[5]), "ser_5@suffix")
+if !assert_equal_str(varname(Lout[2]), "bin_ser_2_foo")
     stop
 endif
-*/
+if !assert_equal_str(varname(Lout[5]), "bin_ser_5_foo")
+    stop
+endif
 
 
 print "Start with means_encode()"

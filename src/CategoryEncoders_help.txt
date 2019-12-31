@@ -8,6 +8,9 @@ A set of gretl transformers for encoding categorical variables into numeric with
 
 The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled ["Sufficient Representations for Categorical Variables"] (https://arxiv.org/abs/1908.09874). Their github project-page can be found [here] (https://github.com/grf-labs/sufrep). The authors propose lower-dimensional real-values representations of categorical variables that are sufficient in the sense that no predictive information is lost.
 
+Source code plus tests can be found here:
+https://github.com/atecon/CategoryEncoders
+
 For a more detailed manual, see <https://github.com/atecon/CategoryEncoders/blob/master/README.md>.
 
 
@@ -28,14 +31,11 @@ threshold:
 scalar, Feature values below or equal to this are replaced by 0, above it by 1. (0.0 by default)
 
 suffix:
-string, Add a suffix to the returned series' name default value "_bin")
-
-verbose:
-bool, Print details or not (per default no printout)
+string, Add a suffix to the returned series' name (default value "_bin")
 
 Returns:
 --------
-List of named series with binary values. The i-th series name takes the i-th input series' name plus the suffix "_bin" if not differently set.
+List of named series with binary values. The i-th series' name takes the i-th input series' name plus the suffix "_bin" if not differently set.
 
 
 ohe_encode

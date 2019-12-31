@@ -44,12 +44,11 @@ end function
 
 function list binary_encode (const list X "List of series",
                              const scalar threshold "X[i] <= threshold are set to 0, above it by 1.",
-                             string suffix[null] "Suffix for returned series name",
-                             const bool verbose[0] "Print details")
+                             string suffix[null] "Suffix for returned series name")
     /* Binarize data (set feature values to 0 or 1) according to a threshold. */
 
     list R = null
-
+   
     if !exists(suffix)
         string suffix = "_bin"
     endif
@@ -97,7 +96,7 @@ function list median_encode (const list X "List of series",
                              const series G "Holding group IDs",
                              string suffix[null] "Suffix for returned series name",
                              const bool verbose[0])
-    /* Group-wise median computation wrapper function */
+    /* Group-wise median computation wrapper function. */
 
     if !exists(suffix)
         string suffix = "median"
@@ -177,7 +176,7 @@ end function
 
 function scalar xlist_member_isconst (const list X)
     /* Checks of any series of X is a constant. */
-    
+
     scalar ret = 0
     loop foreach i X -q
         if isconst(X.$i)
@@ -186,8 +185,8 @@ function scalar xlist_member_isconst (const list X)
             break
         endif
     endloop
-    
-    return ret    
+
+    return ret
 end function
 
 function list pca_encode (const list X "Exogenous regressors",
@@ -257,7 +256,7 @@ function list low_rank_encode (list X "Exogenous regressors",
     strings xnames = varnames(X)
 
     if !series_g_isdiscrete(G) || !xlist_has_at_least_two_members(X) || !check_num_components(X, num_components) \
-        || xlist_member_isconst(X)
+          || xlist_member_isconst(X)
         return R
     endif
 
