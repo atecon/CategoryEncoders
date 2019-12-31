@@ -302,7 +302,7 @@ endif
 
 
 
-
+# TODO: Check behavior of NAs exist!
 print "Start with pca_encode()"
 smpl full
 series groups = {1,1,2,2,1}
