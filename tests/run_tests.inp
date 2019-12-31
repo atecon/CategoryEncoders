@@ -1,13 +1,11 @@
 set verbose off
 clear
-include assertion.gfn
-
-
 
 string WD = "/home/at/git/CategoryEncoders/src"		# TODO: drop
 set workdir @WD
 
 include CategoryEncoders.inp --force
+include assertion.gfn
 
 set seed 1234
 nulldata 6 -p
@@ -20,92 +18,126 @@ series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
 series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
 series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
 series ser_5 = 1
+series ser_6 = {0.20, NA, 0.05, 0.82, 0.27, 0.40}
+series ohe_ser_1 = {1,0,0,1,1,0}
+series ohe_ser_2 = {NA,0,0,1,1,0}
+series ohe_ser_3 = {NA,0,0,NA,1,0}
+series ohe_ser_4 = NA
+series ohe_ser_5 = 1
+setinfo ohe_ser_1 --discrete
+setinfo ohe_ser_2 --discrete
+setinfo ohe_ser_3 --discrete
+setinfo ohe_ser_4 --discrete
+setinfo ohe_ser_5 --discrete
+series bin_ser_1 = {-1,0.5,0,1.1,-1.5,1.001}
+series bin_ser_2 = {NA,0.5,0,1.1,-1.5,1.001}
+series bin_ser_3 = {NA,0.5,0,NA,-1.5,1.001}
+series bin_ser_4 = NA
+series bin_ser_5 = 1
 
-/*
+
 print "Start with ohe_encode()"
-series ser_1 = {1,0,0,1,1}
-series ser_2 = {NA,0,0,1,1}
-series ser_3 = {NA,0,0,NA,1}
-series ser_4 = NA
-series ser_5 = 1
-setinfo ser_1 --discrete
-setinfo ser_2 --discrete
-setinfo ser_3 --discrete
-setinfo ser_4 --discrete
-setinfo ser_5 --discrete
-
-list Lout = ohe_encode(ser_1, 0, 1)
+list Lout = ohe_encode(ohe_ser_1, 0, 1)
 if !assert_equal_num(nelem(Lout), 2)
     stop
 endif
-if !assert_equal_num(sum(Lout[1]), 2)
+if !assert_equal_num(sum(Lout[1]), 3)
     stop
 endif
 if !assert_equal_num(sum(Lout[2]), 3)
     stop
 endif
-if !assert_equal_str(varname(Lout[1]), "ser_1_ohe_0")
+if !assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_0")
     stop
 endif
-if !assert_equal_str(varname(Lout[2]), "ser_1_ohe_1")
+if !assert_equal_str(varname(Lout[2]), "ohe_ser_1_ohe_1")
     stop
 endif
 
 
 print "Start with ohe_encode() and drop first option"
-list Lout = ohe_encode(ser_1, 1, 1)
+list Lout = ohe_encode(ohe_ser_1, 1, 1)
 if !assert_equal_num(nelem(Lout), 1)
     stop
 endif
 if !assert_equal_num(sum(Lout[1]), 3)
     stop
 endif
-if !assert_equal_str(varname(Lout[1]), "ser_1_ohe_1")
+if !assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_1")
     stop
 endif
 
 print "Start with ohe_encode() and drop last option"
-list Lout = ohe_encode(ser_1, 2, 1)
+list Lout = ohe_encode(ohe_ser_1, 2, 1)
+print Lout -o
 if !assert_equal_num(nelem(Lout), 1)
     stop
 endif
-if !assert_equal_num(sum(Lout[1]), 2)
+if !assert_equal_num(sum(Lout[1]), 3)
     stop
 endif
-if !assert_equal_str(varname(Lout[1]), "ser_1_ohe_0")
+if !assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_0")
     stop
 endif
+
+print "Start with ohe_encode() + NA for single obs"
+list Lout = ohe_encode(ohe_ser_2, 0, 1)
+if !assert_equal_num(nelem(Lout), 2)
+    stop
+endif
+if !assert_equal_num(sum(Lout[1]), 3)
+    stop
+endif
+if !assert_equal_num(sum(Lout[2]), 2)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ohe_ser_2_ohe_0")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ohe_ser_2_ohe_1")
+    stop
+endif
+
+print "Start with ohe_encode() + NA values for all obs."
+list Lout = ohe_encode(ohe_ser_4, 0, 1)
+if !assert_equal_num(nelem(Lout), 0)
+    stop
+endif
+
+print "Start with ohe_encode() + constant series"
+list Lout = ohe_encode(ohe_ser_5, 0, 1)
+print Lout -o
+if !assert_equal_num(nelem(Lout), 0)
+    stop
+endif
+
 
 
 print "Start with binary_encode()"
-series ser_1 = {-1,0.5,0,1.1,-1.5}
-series ser_2 = {NA,0.5,0,1.1,-1.5}
-series ser_3 = {NA,0.5,0,NA,-1.5}
-series ser_4 = NA
-series ser_5 = 1
-
-list X = ser_1 ser_2 ser_3 ser_4 ser_5
+list X = bin_ser_1 bin_ser_2 bin_ser_3 bin_ser_4 bin_ser_5
 scalar threshold = 0.5
 scalar verbose = 1
 list Lout = binary_encode(X, threshold, , verbose)
 if !assert_equal_num(nelem(Lout), nelem(X))
     stop
 endif
-if !assert_equal_num(sum(Lout[1]), 1)
+if !assert_equal_num(sum(Lout[1]), 2)
     stop
 endif
-if !assert_equal_num(sum(Lout[2]), 1)
+if !assert_equal_num(sum(Lout[2]), 2)
     stop
 endif
-if !assert_equal_num(sum(Lout[3]), 0)
+if !assert_equal_num(sum(Lout[3]), 1)
     stop
 endif
 if ok(assert_equal_num(sum(Lout[4]), 0))
     stop
 endif
-if !assert_equal_num(sum(Lout[5]), 5)
+if !assert_equal_num(sum(Lout[5]), 6)
     stop
 endif
+
+** HIER WEITERMACHEN *** 
 
 if !assert_equal_str(varname(Lout[1]), "ser_1_bin")
     stop
@@ -295,18 +327,13 @@ endif
 
 print "Start with pca_encode()"
 smpl full
-list X = ser_1 ser_2 ser_3 ser_5
+list X = ser_1 ser_2 ser_3
 scalar num_components = 0
 string suffix = ""
 scalar verbose = 1
 list Lout = pca_encode(X, groups, num_components, suffix, verbose)
-print Lout -o
-stop
-print X -o
-list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
-print Lout -o
 
-if !assert_equal_num(nelem(Lout), 2)
+if !assert_equal_num(nelem(Lout), 3)
     stop
 endif
 if !assert_equal_str(varname(Lout[1]), "ser_1_pca")
@@ -315,11 +342,17 @@ endif
 if !assert_equal_str(varname(Lout[2]), "ser_2_pca")
     stop
 endif
-
-if !assert_equal_num(nobs(Lout[1]), 5)
+if !assert_equal_str(varname(Lout[3]), "ser_3_pca")
     stop
 endif
-if !assert_equal_num(nobs(Lout[2]), 5)
+
+if !assert_equal_num(nobs(Lout[1]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[2]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[3]), 6)
     stop
 endif
 
@@ -330,39 +363,58 @@ if !assert_equal_num(rows(values(Lout[2])), 2)
     stop
 endif
 
-if !assert_almost_equal_num(values(Lout[1])[1], -1.549, 1e-3)
+if !assert_almost_equal_num(values(Lout[1])[1], -1.581, 1e-3)
     stop
 endif
-if !assert_almost_equal_num(values(Lout[1])[2], 1.032796, 1e-3)
+if !assert_almost_equal_num(values(Lout[1])[2], 1.581, 1e-3)
     stop
 endif
-if !assert_equal_num(values(Lout[2])[1], 0)
+if !assert_almost_equal_num(values(Lout[2])[1], 0, 1e-3)
     stop
 endif
 if !assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
     stop
 endif
+if !assert_almost_equal_num(values(Lout[3])[1], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[3])[2], 0, 1e-3)
+    stop
+endif
+
+print "pca_encode() with constant series"
+list X = ser_1 ser_2 ser_3 ser_5
+scalar verbose = 1
+list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 0)
+    stop
+endif
 
 
-print "pca_encode() with single factor + own suffix + mean_encode"
+print "pca_encode() with single factor + own suffix"
+list X = ser_1 ser_2 ser_3
 scalar num_components = 1
 scalar verbose = 1
 string suffix = "_foo"
 list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+
 if !assert_equal_num(nelem(Lout), 1)
     stop
 endif
 if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
     stop
 endif
+if !assert_equal_num(nobs(Lout[1]), 6)
+    stop
+endif
 if !assert_equal_num(rows(values(Lout[1])), 2)
     stop
 endif
 
-if !assert_almost_equal_num(values(Lout[1])[1], -1.549, 1e-3)
+if !assert_almost_equal_num(values(Lout[1])[1], -1.581, 1e-3)
     stop
 endif
-if !assert_almost_equal_num(values(Lout[1])[2], 1.032796, 1e-3)
+if !assert_almost_equal_num(values(Lout[1])[2], 1.581, 1e-3)
     stop
 endif
 
@@ -370,49 +422,64 @@ endif
 
 print "Start with pca_encode() + NA value in X"
 smpl full
-series groups = {1,1,2,2,1}
-setinfo groups --discrete
-series ser_1 = {-0.5,NA,0.7,1.1, 0.3}
-series ser_2 = {0.5,0.9,1.7,-2.1, -0.3}
-list X = ser_1 ser_2
+list X = ser_1 ser_2 ser_3 ser_6
 scalar num_components = 0
 string suffix = ""
 scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, , suffix, verbose)
-if !assert_equal_num(nelem(Lout), 2)
+list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+
+if !assert_equal_num(nelem(Lout), 4)
     stop
 endif
 if !assert_equal_str(varname(Lout[1]), "ser_1_pca")
     stop
 endif
-if !assert_equal_str(varname(Lout[2]), "ser_2_pca")
+if !assert_equal_str(varname(Lout[4]), "ser_6_pca")
     stop
 endif
 
-if !assert_equal_num(nobs(Lout[1]), 5)
+if !assert_equal_num(nobs(Lout[1]), 6)
     stop
 endif
-if !assert_equal_num(nobs(Lout[2]), 5)
+if !assert_equal_num(nobs(Lout[2]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[3]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[4]), 6)
     stop
 endif
 
 if !assert_equal_num(rows(values(Lout[1])), 2)
     stop
 endif
-if !assert_equal_num(rows(values(Lout[2])), 2)
+if !assert_equal_num(rows(values(Lout[4])), 2)
     stop
 endif
 
-if !assert_almost_equal_num(values(Lout[1])[1], -1.549, 1e-3)
+if !assert_almost_equal_num(values(Lout[1])[1], -1.825, 1e-3)
     stop
 endif
-if !assert_almost_equal_num(values(Lout[1])[2], 1.032796, 1e-3)
+if !assert_almost_equal_num(values(Lout[1])[2], 1.825, 1e-3)
     stop
 endif
-if !assert_equal_num(values(Lout[2])[1], 0)
+if !assert_almost_equal_num(values(Lout[2])[1], 0, 1e-3)
     stop
 endif
 if !assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[3])[1], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[3])[2], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[4])[1], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(values(Lout[4])[2], 0, 1e-3)
     stop
 endif
 
@@ -420,18 +487,13 @@ endif
 
 print "Start with low_rank_encode()"
 smpl full
-series groups = {1,1,2,2,1}
-setinfo groups --discrete
-series ser_1 = {-0.5,0.6,0.7,1.1, 0.3}
-series ser_2 = {0.5,0.9,1.7,-2.1, -0.3}
-list X = ser_1 ser_2
+list X = ser_1 ser_2 ser_3
 scalar num_components = 0
-scalar mean_encode = 0
 string suffix = ""
 scalar verbose = 1
-list Lout = low_rank_encode(X, groups, num_components, mean_encode, suffix, verbose)
-print Lout -o
-if !assert_equal_num(nelem(Lout), 2)
+list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+
+if !assert_equal_num(nelem(Lout), 3)
     stop
 endif
 if !assert_equal_str(varname(Lout[1]), "ser_1_svd")
@@ -440,82 +502,60 @@ endif
 if !assert_equal_str(varname(Lout[2]), "ser_2_svd")
     stop
 endif
-
-if !assert_equal_num(nobs(Lout[1]), 5)
-    stop
-endif
-if !assert_equal_num(nobs(Lout[2]), 5)
+if !assert_equal_str(varname(Lout[3]), "ser_3_svd")
     stop
 endif
 
-if !assert_almost_equal_num(sum(Lout[1]), -1.14, 1e-3)
+if !assert_equal_num(nobs(Lout[1]), 6)
     stop
 endif
-if !assert_almost_equal_num(sum(Lout[2]), -0.023, 1e-3)
+if !assert_equal_num(nobs(Lout[2]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[3]), 6)
+    stop
+endif
+
+if !assert_almost_equal_num(uniq(Lout[1])[1], 0.442, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[1])[2], 0.371, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[2])[1], 0.371, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[2])[2], -0.442, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[3])[1], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[3])[2], 0, 1e-3)
     stop
 endif
 
 
-print "Start with low_rank_encode() with single factor + own suffix"
-scalar num_components = 1
+print "Start with low_rank_encode() with constant series"
+smpl full
+list X = ser_1 ser_2 ser_3 ser_5
+scalar num_components = 0
 string suffix = "_foo"
-list Lout = low_rank_encode(X, groups, num_components, mean_encode, suffix, verbose)
-if !assert_equal_num(nelem(Lout), 1)
-    stop
-endif
-if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
-    stop
-endif
-if !assert_equal_num(nobs(Lout[1]), 5)
-    stop
-endif
-if !assert_almost_equal_num(sum(Lout[1]), -1.14, 1e-3)
-    stop
-endif
-
-
-
-print "Start with mnl_encode()"
-#nulldata 50 -p
-#series groups = randgen(i,1,2)
-series groups = {1,1,2,2,1}
-setinfo groups --discrete
-series ser_1 = normal()
-series ser_2 = normal()
-list X = ser_1 ser_2
-scalar mean_encode = 1
-string suffix = ""
 scalar verbose = 1
-list Lout = mnl_encode(X, groups, suffix, verbose)
-
-if !assert_equal_num(nelem(Lout), 2)
-    stop
-endif
-if !assert_equal_str(varname(Lout[1]), "ser_1_mnl")
-    stop
-endif
-if !assert_equal_str(varname(Lout[2]), "ser_2_mnl")
+list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 0)
     stop
 endif
 
-if !assert_equal_num(nobs(Lout[1]), 5)
-    stop
-endif
-if !assert_equal_num(nobs(Lout[2]), 5)
-    stop
-endif
-if !assert_almost_equal_num(sum(Lout[1]), -341.356, 1e-3)
-    stop
-endif
-if !assert_almost_equal_num(sum(Lout[2]), -707.717, 1e-3)
-    stop
-endif
-
-
-print "mnl_encode() + own suffix"
+print "Start with low_rank_encode() with NA for single obs. + suffix"
+smpl full
+list X = ser_1 ser_2 ser_3 ser_6
+scalar num_components = 0
 string suffix = "_foo"
-list Lout = mnl_encode(X, groups, suffix, verbose)
-if !assert_equal_num(nelem(Lout), 2)
+scalar verbose = 1
+list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+
+if !assert_equal_num(nelem(Lout), 4)
     stop
 endif
 if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
@@ -524,36 +564,158 @@ endif
 if !assert_equal_str(varname(Lout[2]), "ser_2_foo")
     stop
 endif
-
-if !assert_equal_num(nobs(Lout[1]), 5)
+if !assert_equal_str(varname(Lout[3]), "ser_3_foo")
     stop
 endif
-if !assert_equal_num(nobs(Lout[2]), 5)
-    stop
-endif
-if !assert_almost_equal_num(sum(Lout[1]), -341.356, 1e-3)
-    stop
-endif
-if !assert_almost_equal_num(sum(Lout[2]), -707.717, 1e-3)
+if !assert_equal_str(varname(Lout[4]), "ser_6_foo")
     stop
 endif
 
+if !assert_equal_num(nobs(Lout[1]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[4]), 6)
+    stop
+endif
+
+if !assert_almost_equal_num(uniq(Lout[1])[1], 0.413, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[1])[2], 0.402, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[2])[1], -0.402, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[2])[2], 0.413, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[3])[1], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[3])[2], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[4])[1], 0, 1e-3)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[4])[2], 0, 1e-3)
+    stop
+endif
 
 
 
+print "Start with mnl_encode()"
+list X = ser_1 ser_2 ser_3
+string suffix = ""
+scalar verbose = 1
+list Lout = mnl_encode(X, groups, suffix, verbose)
+
+if !assert_equal_num(nelem(Lout), 3)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_mnl")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ser_2_mnl")
+    stop
+endif
+if !assert_equal_str(varname(Lout[3]), "ser_3_mnl")
+    stop
+endif
+
+if !assert_equal_num(nobs(Lout[1]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[2]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[3]), 6)
+    stop
+endif
+
+if !assert_equal_num(uniq(Lout[1])[1], 1)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[1])[2], -81.916, 1e-3)
+    stop
+endif
+if !assert_equal_num(uniq(Lout[2])[1], 1)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[2])[2], 11.064, 1e-3)
+    stop
+endif
+if !assert_equal_num(uniq(Lout[3])[1], 1)
+    stop
+endif
+if !assert_almost_equal_num(uniq(Lout[3])[2], -39.187, 1e-3)
+    stop
+endif
 
 
 
+print "Start with mnl_encode() + NA values for a complete group"
+smpl full
+list X = ser_1 ser_2 ser_3 ser_4
+string suffix = ""
+scalar verbose = 1
+list Lout = mnl_encode(X, groups, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 0)
+    stop
+endif
 
 
+print "Start with mnl_encode() + NA values for a single obs."
+smpl full
+list X = ser_1 ser_2 ser_3 ser_6
+string suffix = ""
+scalar verbose = 1
+list Lout = mnl_encode(X, groups, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 0)
+    stop
+endif
 
 
+print "Start with mnl_encode() + const series"
+smpl full
+list X = ser_1 ser_2 ser_3 ser_5
+string suffix = ""
+scalar verbose = 1
+list Lout = mnl_encode(X, groups, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 0)
+    stop
+endif
+
+
+print "mnl_encode() + own suffix"
+list X = ser_1 ser_2 ser_3
+string suffix = "_foo"
+list Lout = mnl_encode(X, groups, suffix, verbose)
+if !assert_equal_num(nelem(Lout), 3)
+    stop
+endif
+if !assert_equal_str(varname(Lout[1]), "ser_1_foo")
+    stop
+endif
+if !assert_equal_str(varname(Lout[2]), "ser_2_foo")
+    stop
+endif
+if !assert_equal_str(varname(Lout[3]), "ser_3_foo")
+    stop
+endif
+
+if !assert_equal_num(nobs(Lout[1]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[2]), 6)
+    stop
+endif
+if !assert_equal_num(nobs(Lout[3]), 6)
+    stop
+endif
 
 
 
 printf "\nInfo: All tests passed.\n"
-
-
-
-
 
