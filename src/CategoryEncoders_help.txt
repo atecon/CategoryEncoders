@@ -2,8 +2,6 @@
 
 written by Artur Tarassow
 
-Please report bugs or comments on the gretl mailing list or write to t.artur@posteo.de.
-
 A set of gretl transformers for encoding categorical variables into numeric with different techniques. Many econometric techniques and learning algorithms require categorical data to be transformed into real vectors before it can be used as input.
 
 The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled ["Sufficient Representations for Categorical Variables"] (https://arxiv.org/abs/1908.09874). Their github project-page can be found [here] (https://github.com/grf-labs/sufrep). The authors propose lower-dimensional real-values representations of categorical variables that are sufficient in the sense that no predictive information is lost.
@@ -12,6 +10,8 @@ Source code plus tests can be found here:
 https://github.com/atecon/CategoryEncoders
 
 For a more detailed manual, see <https://github.com/atecon/CategoryEncoders/blob/master/README.md>.
+
+Please report bugs or comments on the gretl mailing list, on github.com or write to atecon@posteo.de.
 
 
 ----------------
@@ -35,7 +35,7 @@ string, Add a suffix to the returned series' name (default value "_bin")
 
 Returns:
 --------
-List of named series with binary values. The i-th series' name takes the i-th input series' name plus the suffix "_bin" if not differently set.
+List of named series with binary values. Missing (NA) values of the i-th input series are ignored. The i-th series' name takes the i-th input series' name plus the suffix "_bin" if not differently set.
 
 
 ohe_encode
@@ -48,14 +48,14 @@ X:
 series, Series with discrete values to which to apply the function
 
 drop:
-int, Decide whether to drop a resulting series. Per default no resulting series is droppped. For drop=1, the highest value of X is omitted from the encoding. For drop=2 the lowest value of X is omitted from the encoding
+int, Decide whether to drop a resulting series. Per default no resulting series is droppped. For drop=1, the lowest value of X is omitted from the encoding. For drop=2 the highest value of X is omitted from the encoding
 
 verbose:
 bool, Print details or not (per default no printout)
 
 Returns:
 --------
-List of named series with binary values. The i-th series is named 'Dx_i' where 'x' refers to the name of input series X and 'i' to the i-th distinct value of X.
+List of named series with binary values. The i-th series is named 'x_ohe_d' where 'x' refers to the name of input series X[i] and 'd' to the d-th distinct value of X. If the the input series is not discrete, includes only missing values (NA) or is a constant, an empty list is returned.
 
 
 means_encode
@@ -78,7 +78,7 @@ bool, Print details or not (per default no printout)
 
 Returns:
 --------
-List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix "_mean" if not differently set.
+List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix "_mean" if not differently set. If G is not a discrete series, an empty list is returned. Missing observations of the i-th series X[i] are interpolated by group-wise mean values.
 
 
 median_encode
@@ -101,12 +101,12 @@ bool, Print details or not (per default no printout)
 
 Returns:
 --------
-List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix "_median" if not differently set..
+List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix "_median" if not differently set. If G is not a discrete series, an empty list is returned. Missing observations of the i-th series X[i] are interpolated by group-wise median values.
 
 
 pca_encode
 ==========
-Compute category-wise, as identified by the discrete series G, principle components using all information in list X.
+Compute category-wise, as identified by the discrete series G, principle components using all information in list X. Means encoding, by applying the function mean_encode(), is automatically applied to all members of X, before computing principal components.
 
 Parameters:
 -----------
@@ -117,10 +117,7 @@ G:
 series, Discrete series identifying unique categories
 
 num_components:
-int, Retrieve only the first n principle components (per default retrieve all)
-
-mean_encode:
-bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
+int, Retrieve only the first n principle components (per default retrieve all). 'num_components' cannot exceed the number of list members of X.
 
 suffix:
 string, Add a suffix to the returned series' name (default value "_pca")
@@ -130,12 +127,12 @@ bool, Print details or not (per default no printout)
 
 Returns:
 --------
-List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix "_pca" if not differently set.
+List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix "_pca" if not differently set. If G is not discrete, list X includes less than two members, or any series of X is constant or includes inly missing values, an empty list is returned. If some series X[i] comprises at least some non-missing values, PCA will probably still work.
 
 
 low_rank_encode
 ===============
-Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X. Means encoding, by applying the function mean_encode(), is automatically applied to all members of X, before computing principal components.
 
 Parameters:
 -----------
@@ -147,9 +144,6 @@ series, Discrete series identifying unique groups
 
 num_components:
 int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
-
-mean_encode:
-bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
 
 suffix:
 string, Add a suffix to the returned series' name (default value "_svd")
@@ -159,12 +153,13 @@ bool, Print details or not (per default no printout)
 
 Returns:
 --------
-List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "_svd" if not differently set.
+List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "_svd" if not differently set. If G is not discrete, list X includes less than two members or some series X[i] is a constant, an empty list is returned. If some series X[i] comprises at least some non-missing values, SVD will probably still work.
 
 
 mnl_encode
 ============
-Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X. Means encoding, by applying the function mean_encode(), is automatically applied to all members of X, before computing principal components.
+
 
 Parameters:
 -----------
@@ -177,9 +172,6 @@ series, Discrete series identifying unique groups
 num_components:
 int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
 
-mean_encode:
-bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
-
 suffix:
 string, Add a suffix to the returned series' name (default value "_mnl")
 
@@ -188,11 +180,18 @@ bool, Print details or not (per default no printout)
 
 Returns:
 --------
-List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "_mnl" if not differently set.
-
+List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "_mnl" if not differently set. If G is not discrete, of G has not at least two distinct values, list X includes less than two members or some series X[i] is a constant, an empty list is returned. If some series X[i] comprises at least some missing values, logit type of estimation fails.
 
 
 Changelog:
 ----------
+Version 0.3 (Jan. 2020):
+- Bugfix: For mnl_encode(), no means encoding is applied on list X any more as this resulted in perfect collinearity issues.
+- Mean enocoding is done automatically when calling pca_encode() or low_rank_enocde(), and cannot be selected by the user.
+- Drop unused 'verbose' argument from binary_encode().
+- Add several unit-tests.
+- Add additional checks.
+- Code cleanup.
+
 Version 0.2 (Sept. 2019):
 - Initial version

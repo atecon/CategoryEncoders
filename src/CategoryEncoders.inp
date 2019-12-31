@@ -30,9 +30,9 @@ function list ohe_encode (const series X "Discrete series",
 
     if verbose && drop
         if drop == 1
-            string which = "highest"
-        elif drop == 2
             string which = "lowest"
+        elif drop == 2
+            string which = "highest"
         endif
         printf "\nInfo: The %s value of variable %s is omitted \n\
           from the encoding.\n", which, argname(X)
@@ -174,20 +174,6 @@ function series series_with_groupwise_values (const series G,
     return R
 end function
 
-function scalar xlist_member_isconst (const list X)
-    /* Checks of any series of X is a constant. */
-
-    scalar ret = 0
-    loop foreach i X -q
-        if isconst(X.$i)
-            ret++
-            printf "\nError: pca_encode() does not work if any regressor is constant."
-            break
-        endif
-    endloop
-
-    return ret
-end function
 
 function list pca_encode (const list X "Exogenous regressors",
                           const series G "Holding group IDs",
@@ -300,8 +286,9 @@ function list mnl_encode (const list X "Exogenous regressors",
     strings xnames = varnames(X)
 
     if n_g_values == 1
-        printf "\nError: Group-series %s must at least comprise two distinct values.", \
+        printf "\nError: Dependent group-series %s must at least have two distinct values.", \
           argname(G)
+        return R
     endif
     if !series_g_isdiscrete(G) || !xlist_has_at_least_two_members(X)
         return R
@@ -386,5 +373,20 @@ function string get_verbose_opt (const bool verbose)
     return (verbose==0) ? "--quiet" : verbose_opt
 end function
 
+
+function scalar xlist_member_isconst (const list X)
+    /* Checks of any series of X is a constant. */
+
+    scalar ret = 0
+    loop foreach i X -q
+        if isconst(X.$i)
+            ret++
+            printf "\nError: pca_encode() does not work if any regressor is constant."
+            break
+        endif
+    endloop
+
+    return ret
+end function
 
 
