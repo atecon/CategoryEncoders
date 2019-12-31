@@ -209,7 +209,6 @@ function list pca_encode (const list X "Exogenous regressors",
 
     pca X @save_opt @verbose_opt
     list PC += PC*
-    print PC -o
 
     scalar counter = 0
     loop foreach i X -q

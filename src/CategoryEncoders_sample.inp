@@ -14,7 +14,7 @@ list Xbase = density wcon
 
 
 # One-hot encoding (aka dummifying)
-list OHE = ohe_encode(unit)
+list OHE = ohe_encode(unit, 0, 1)
 print unit OHE -o --range=70:80
 
 # Binarizer
@@ -32,10 +32,6 @@ print unit Xbase Xpmedian -o --range=70:80
 # PCA encoding
 list Xpca = pca_encode(Xbase, unit)
 print unit Xbase Xpca -o --range=70:80
-
-# PCA encoding
-list Xpca_wo_mean = pca_encode(Xbase, unit)
-print unit Xbase Xpca_wo_mean -o --range=70:80
 
 # SVD (low rank) encoding but return only first 2 components
 list Xsvd = low_rank_encode(Xbase, unit, 2)
