@@ -42,7 +42,7 @@ list Xsvd = low_rank_encode(Xbase, unit, 2)
 print unit Xbase Xsvd -o --range=70:80
 
 # Multinomial logistic regression coefficients (excluding intercept which is used for estimation)
-list Xmnl = mnl_encode(Xbase, unit, 1)
+list Xmnl = mnl_encode(Xbase, unit, , 1)
 print unit Xbase Xmnl -o --range=70:80
 
 

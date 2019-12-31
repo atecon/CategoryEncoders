@@ -332,7 +332,9 @@ return means_or_median_encode(X, G, 0, suffix, verbose)
 <code>/* Principal components anaylsis. mean_encode() will be run automatically. */
 list R = null
 list PC = null
-if !exists(suffix) || !strlen(suffix)
+if !exists(suffix)
+  string suffix = &quot;_pca&quot;
+elif !strlen(suffix)
   string suffix = &quot;_pca&quot;
 endif
 string verbose_opt = get_verbose_opt(verbose)
@@ -384,7 +386,9 @@ return R
 list R = null
 matrix U
 matrix V
-if !exists(suffix) || !strlen(suffix)
+if !exists(suffix)
+  string suffix = &quot;_svd&quot;
+elif !strlen(suffix)
   string suffix = &quot;_svd&quot;
 endif
 strings xnames = varnames(X)
@@ -425,7 +429,9 @@ return R
 <code>/* Multinomial logistic regression. Requires also coefficients from
 reference category which are, however, not returned by gretl. */
 list R = null
-if !exists(suffix) || !strlen(suffix)
+if !exists(suffix)
+  string suffix = &quot;_mnl&quot;
+elif !strlen(suffix)
   string suffix = &quot;_mnl&quot;
 endif
 string verbose_opt = get_verbose_opt(verbose)
@@ -676,7 +682,7 @@ list Xsvd = low_rank_encode(Xbase, unit, 2)
 print unit Xbase Xsvd -o --range=70:80
 
 # Multinomial logistic regression coefficients (excluding intercept which is used for estimation)
-list Xmnl = mnl_encode(Xbase, unit, 1)
+list Xmnl = mnl_encode(Xbase, unit, , 1)
 print unit Xbase Xmnl -o --range=70:80
 </sample-script>
 </gretl-function-package>
