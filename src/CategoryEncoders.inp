@@ -301,7 +301,7 @@ function list mnl_encode (const list X "Exogenous regressors",
 
     catch logit G const X --multinomial @verbose_opt
     if $error
-        printf "\nError: Failed to estimate logit model."
+        printf "\nError: Failed to estimate logit model.\n"
         return R
     endif
 

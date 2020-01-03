@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="CategoryEncoders" no-data-ok="true" minver="2018a">
+<gretl-function-package name="CategoryEncoders" minver="2018a">
 <author email="atecon@posteo.de">Artur Tarassow</author>
 <version>0.3</version>
-<date>2020-01-01</date>
+<date>2020-01-03</date>
 <description>Encoder based on categorical variables</description>
 <tags>C10</tags>
 <help>
@@ -445,7 +445,7 @@ if !series_g_isdiscrete(G) || !xlist_has_at_least_two_members(X)
 endif
 catch logit G const X --multinomial @verbose_opt
 if $error
-  printf &quot;\nError: Failed to estimate logit model.&quot;
+  printf &quot;\nError: Failed to estimate logit model.\n&quot;
   return R
 endif
 scalar pos_const = inlist($xlist, &quot;const&quot;)
