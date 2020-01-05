@@ -38,19 +38,16 @@ print unit Xbase Xpmean -o --range=70:80
 list Xpmedian = median_encode(Xbase, unit)
 print unit Xbase Xpmedian -o --range=70:80
 
-# PCA encoding with automatic mean encoding
-list Xpca = pca_encode(Xbase, unit)			# means_encoding done per default
+# PCA encoding (means_encoding done per default)
+list Xpca = pca_encode(Xbase, unit)
 print unit Xbase Xpca -o --range=70:80
 
-# PCA encoding without automatic mean encoding
-list Xpca_wo_mean = pca_encode(Xbase, unit, , 0)
-print unit Xbase Xpca_wo_mean -o --range=70:80
-
-# SVD (low rank) encoding but return only first 2 components
+# SVD aka 'low rank' encoding (means_encoding done per default)
+# Return only first 2 components
 list Xsvd = low_rank_encode(Xbase, unit, 2)
 print unit Xbase Xsvd -o --range=70:80
 
-# Multinomial logistic regression coefficients (excluding intercept which is used for estimation)
+# Multinomial logistic regression coefficients (no means_encoding done)
 list Xmnl = mnl_encode(Xbase, unit, 1)
 print unit Xbase Xmnl -o --range=70:80
 ```
@@ -132,21 +129,6 @@ The returned output is:
 12:2                0         1.470238          203.073        -0.441375     -2.70617e-14
 12:3                0         1.468254          227.359        -0.441375     -2.70617e-14
 
-# print unit Xbase Xpca_wo_mean -o --range=70:80
-             unit      density         wcon  density_pca     wcon_pca
-
-10:7            0     0.576744      260.138     -0.31360      0.48138
-11:1            1     2.461305      231.923      0.44844     -0.60777
-11:2            1     2.485584      241.853      0.51792     -0.56213
-11:3            1     2.497724      247.788      0.55829     -0.53369
-11:4            1     2.523520      262.515      0.65633     -0.46099
-11:5            1     2.555387      262.634      0.67267     -0.47595
-11:6            1     2.579666      289.087      0.83793     -0.33454
-11:7            1     2.602428      313.474      0.99048     -0.20435
-12:1            0     1.452381      194.653     -0.26314     -0.32828
-12:2            0     1.470238      203.073     -0.20556     -0.28824
-12:3            0     1.468254      227.359     -0.06575     -0.14649
-
 # print unit Xbase Xsvd -o --range=70:80
                  unit          density             wcon density_mean_svd    wcon_mean_svd
 
@@ -189,12 +171,10 @@ X	-- list, List of series to which to apply the function
 
 threshold -- scalar, Feature values below or equal to this are replaced by 0, above it by 1 (0.0 by default).
 
-suffix -- string, Add a suffix to the returned series' name (default value *_bin*)
-
-verbose -- bool, Print details or not (per default no printout)
+suffix -- string, Add a suffix to the returned series' name (default value "\_bin")
 
 ### Returns:
-List of named series with binary values. The i-th series name takes the i-th input series' name plus the suffix *_bin* if not differently set.
+List of named series with binary values. Missing (NA) values of the i-th input series are ignored. The i-th series' name takes the i-th input series' name plus the suffix '\_bin' if not differently set.
 ***
 
 ## ohe_encode
@@ -204,13 +184,13 @@ Encode categorical discrete integer features of a single series as a one-hot (bi
 X -- series, Series with discrete values to which to apply the function
 
 drop -- int, Decide whether to drop a resulting series. Per default no resulting series is droppped.
-	* For drop=1, the highest value of X is omitted from the encoding.
-	* For drop=2, the lowest value of X is omitted from the encoding
+	* For drop=1, the lowest value of X is omitted from the encoding.
+	* For drop=2, the highest value of X is omitted from the encoding
 
 verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
-List of named series with binary values. The i-th series is named 'Dx_i' where 'x' refers to the name of input series X and 'i' to the i-th distinct value of X.
+List of named series with binary values. The i-th series is named 'x_ohe_d' where 'x' refers to the name of input series X[i] and 'd' to the d-th distinct value of X. If the the input series is not discrete, includes only missing values (NA) or is a constant, an empty list is returned.
 
 ### Example:
 ![](/figs/ohe.png)
@@ -224,12 +204,12 @@ X -- list, List of series to which to apply the function
 
 G -- series, Discrete series refering to unique categories
 
-suffix -- string, Add a suffix to the returned series' name (default value *_mean*)
+suffix -- string, Add a suffix to the returned series' name (default value "\_mean")
 
 verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
-List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix *_mean* if not differently set.
+List of named series with category-wise mean values. The i-th series name takes the i-th input series' name plus the suffix "\_mean" if not differently set. If G is not a discrete series, an empty list is returned. Missing observations of the i-th series X[i] are interpolated by group-wise mean values.
 
 ### Example:
 ![](/figs/means_encoding.png)
@@ -243,16 +223,16 @@ X -- list, List of series to which to apply the function
 
 G -- series, Discrete series refering to unique categories
 
-suffix -- string, Add a suffix to the returned series' name (default value *_mean*)
+suffix -- string, Add a suffix to the returned series' name (default value "\_mean")
 
 verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
-List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix *_median* if not differently set..
+List of named series with category-wise median values. The i-th series name takes the i-th input series' name plus the suffix "\_median" if not differently set. If G is not a discrete series, an empty list is returned. Missing observations of the i-th series X[i] are interpolated by group-wise median values.
 ***
 
 ## low_rank_encode
-Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X. Means encoding, by applying the function mean_encode(), is automatically applied to all members of X, before computing principal components.
 
 ### Parameters:
 X -- list, List of k series to which to apply the function
@@ -261,62 +241,69 @@ G -- series, Discrete series identifying unique groups
 
 num_components -- int, Retrieve only the first n columns of the left-singular value matrix (per default retrieve the first k columns)
 
-mean_encode -- bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
-
-suffix -- string, Add a suffix to the returned series' name (default value *_svd*)
+suffix -- string, Add a suffix to the returned series' name (default value "\_svd")
 
 verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
-List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix *_svd* if not differently set.
+List of named series with group-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "\_svd" if not differently set. If G is not discrete, list X includes less than two members or some series X[i] is a constant, an empty list is returned. If some series X[i] comprises at least some non-missing values, SVD will probably still work.
 
 ### Example:
 ![](/figs/low_rank.png)
 ***
 
 ## pca_encode
-Works similar to the low_rank_encode() function. Compute category-wise, as identified by the discrete series G, principle components using all information in list X.
+Works similar to the low_rank_encode() function. Compute category-wise, as identified by the discrete series G, principle Compute category-wise, as identified by the discrete series G, principle components using all information in list X. Means encoding, by applying the function mean_encode(), is automatically applied to all members of X, before computing principal components.
 
 ### Parameters:
 X -- list, List of series to which to apply the function
 
 G -- series, Discrete series identifying unique categories
 
-num_components -- int, Retrieve only the first n principle components (per default retrieve all)
+num_components -- int, Retrieve only the first n principle components (per default retrieve all). 'num_components' cannot exceed the number of list members of X.
 
-mean_encode -- bool, Apply means-encoding on all X elemenets before computing the principle components of these n-encoded series.
-
-suffix -- string, Add a suffix to the returned series' name (default value *_pca*)
+suffix -- string, Add a suffix to the returned series' name (default value "\_pca")
 
 verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
-List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix *_pca* if not differently set.
+List of named series with group-wise principle component values. The i-th series name takes the i-th input series' name plus the suffix "\_pca" if not differently set. If G is not discrete, list X includes less than two members, or any series of X is constant or includes inly missing values, an empty list is returned. If some series X[i] comprises at least some non-missing values, PCA will probably still work.
 ***
 
 ## mnl_encode
-Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X.
+Compute category-wise, as identified by the discrete series G, left-singlular value matrix component by means of Singular Value Decomposition using all information in list X. Means encoding, by applying the function mean_encode(), is automatically applied to all members of X, before computing principal components.
 
 ### Parameters:
 X -- list, List of k series to which to apply the function
 G -- series, Discrete series identifying unique groups
 
-num_components -- int, Retrieve only the first n columns of the left-singular value matrix (per default retrieve the first k columns)
+num_components -- int, Retrieve only the first n columns of the left-singular value matrix (per	default retrieve the first k columns)
 
-mean_encode -- bool, Apply means-encoding on all X elemenets before computing the low-rank components of these mean-encoded series.
-
-suffix -- string, Add a suffix to the returned series' name (default value *_mnl*)
+suffix -- string, Add a suffix to the returned series' name (default value "\_mnl")
 
 verbose -- bool, Print details or not (per default no printout)
 
 ### Returns:
-List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix *_mnl* if not differently set.
+List of named series with category-wise rank component values. The i-th series name takes the i-th input series' name plus the suffix "\_mnl" if not differently set. If G is not discrete, of G has not at least two distinct values, list X includes less than two members or some series X[i] is a constant, an empty list is returned. If some series X[i] comprises at least some missing values, logit type of estimation fails.
 
 ### Example:
 ![](/figs/mnl_encoding.png)
 ***
 
+# Tests
+Unit-tests are stored in the "tests" folder. Run the following shell-script:
+```shell
+./run_tests.sh
+```
 
 ## Changelog:
+Version 0.3 (Jan. 2020):
+ * Bugfix: For mnl_encode(), no means encoding is applied on list X any more as this resulted in perfect collinearity issues.
+ * Mean enocoding is done automatically when calling pca_encode() or low_rank_enocde(), and cannot be selected by the user.
+ * Drop unused 'verbose' argument from binary_encode().
+ * Add several unit-tests.
+ * Add additional checks.
+ * Code cleanup.
+
 Version 0.2 (Sept. 2019):
   * Initial version
