@@ -253,8 +253,8 @@ function list low_rank_encode (list X "Exogenous regressors",
 
     smpl G X --no-missing
 
-    #matrix sv = svd({X}, &U, &V)				# slower than tall_svd()
-    matrix sv = tall_svd({X}, &U, &V)
+    matrix sv = svd({X}, &U, &V)
+#   matrix sv = tall_svd({X}, &U, &V)
 
     scalar counter = 0
     loop foreach i X -q
@@ -326,10 +326,10 @@ function list mnl_encode (const list X "Exogenous regressors",
     return R
 end function
 
-
+/*
 function matrix tall_svd (const matrix X, matrix *U, matrix *V)
-/* Special-case svd when X has lots of rows and few columns. Faster than built-in svd().
-    Written by Jack Lucchetti. */
+# Special-case svd when X has lots of rows and few columns. Faster than built-in svd().
+# Written by Jack Lucchetti.
 
     scalar c = cols(X)
     matrix lambdas = eigensym(X'X, &V)
@@ -339,7 +339,7 @@ function matrix tall_svd (const matrix X, matrix *U, matrix *V)
 
     return lambdas
 end function
-
+*/
 
 function scalar series_g_isdiscrete (const series G "Discrete grouping series")
     /* Check whether grouping series G is discrete. */

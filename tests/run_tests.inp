@@ -1,383 +1,445 @@
 set verbose off
 clear
 
-#include CategoryEncoders.inp --force
-include "/home/at/git/CategoryEncoders/src/CategoryEncoders.inp"
+include "./src/CategoryEncoders.inp"
 include assertion.gfn
 
 set seed 1234
 nulldata 6 -p
 
-# Series 1 to 3 are using exactly the same values as are used in Athey et al. (2019)
-series groups = {1,1,1,2,2,2}
-setinfo groups --discrete
-series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
-series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
-series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
-series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
-series ser_5 = 1
-series ser_6 = {0.20, NA, 0.05, 0.82, 0.27, 0.40}
-series ohe_ser_1 = {1,0,0,1,1,0}
-series ohe_ser_2 = {NA,0,0,1,1,0}
-series ohe_ser_3 = {NA,0,0,NA,1,0}
-series ohe_ser_4 = NA
-series ohe_ser_5 = 1
-setinfo ohe_ser_1 --discrete
-setinfo ohe_ser_2 --discrete
-setinfo ohe_ser_3 --discrete
-setinfo ohe_ser_4 --discrete
-setinfo ohe_ser_5 --discrete
-series bin_ser_1 = {-1,0.5,0,1.1,-1.5,1.001}
-series bin_ser_2 = {NA,0.5,0,1.1,-1.5,1.001}
-series bin_ser_3 = {NA,0.5,0,NA,-1.5,1.001}
-series bin_ser_4 = NA
-series bin_ser_5 = 1
+function void test_ohe_encode (void)
+    print "Start with ohe_encode()"
+
+    series bin_ser_1 = {-1,0.5,0,1.1,-1.5,1.001}
+    series bin_ser_2 = {NA,0.5,0,1.1,-1.5,1.001}
+    series bin_ser_3 = {NA,0.5,0,NA,-1.5,1.001}
+    series bin_ser_4 = NA
+    series bin_ser_5 = 1
+    series ohe_ser_1 = {1,0,0,1,1,0}
+    series ohe_ser_2 = {NA,0,0,1,1,0}
+    series ohe_ser_3 = {NA,0,0,NA,1,0}
+    series ohe_ser_4 = NA
+    series ohe_ser_5 = 1
+    setinfo ohe_ser_1 --discrete
+    setinfo ohe_ser_2 --discrete
+    setinfo ohe_ser_3 --discrete
+    setinfo ohe_ser_4 --discrete
+    setinfo ohe_ser_5 --discrete
+
+    list Lout = ohe_encode(ohe_ser_1, 0, 1)
+    assert_equal_num(nelem(Lout), 2)
+    assert_equal_num(sum(Lout[1]), 3)
+    assert_equal_num(sum(Lout[2]), 3)
+    assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_0")
+    assert_equal_str(varname(Lout[2]), "ohe_ser_1_ohe_1")
+
+    print "Start with ohe_encode() and drop first option"
+    list Lout = ohe_encode(ohe_ser_1, 1, 1)
+    assert_equal_num(nelem(Lout), 1)
+    assert_equal_num(sum(Lout[1]), 3)
+    assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_1")
+
+    print "Start with ohe_encode() and drop last option"
+    list Lout = ohe_encode(ohe_ser_1, 2, 1)
+    assert_equal_num(nelem(Lout), 1)
+    assert_equal_num(sum(Lout[1]), 3)
+    assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_0")
+
+    print "Start with ohe_encode() + NA for single obs"
+    list Lout = ohe_encode(ohe_ser_2, 0, 1)
+    assert_equal_num(nelem(Lout), 2)
+    assert_equal_num(sum(Lout[1]), 3)
+    assert_equal_num(sum(Lout[2]), 2)
+    assert_equal_str(varname(Lout[1]), "ohe_ser_2_ohe_0")
+    assert_equal_str(varname(Lout[2]), "ohe_ser_2_ohe_1")
+
+    print "Start with ohe_encode() + NA values for all obs."
+    list Lout = ohe_encode(ohe_ser_4, 0, 1)
+    assert_equal_num(nelem(Lout), 0)
+
+    print "Start with ohe_encode() + constant series"
+    list Lout = ohe_encode(ohe_ser_5, 0, 1)
+    assert_equal_num(nelem(Lout), 0)
 
 
-print "Start with ohe_encode()"
-list Lout = ohe_encode(ohe_ser_1, 0, 1)
-assert_equal_num(nelem(Lout), 2)
-assert_equal_num(sum(Lout[1]), 3)
-assert_equal_num(sum(Lout[2]), 3)
-assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_0")
-assert_equal_str(varname(Lout[2]), "ohe_ser_1_ohe_1")
+    print "Start with binary_encode()"
+    list X = bin_ser_1 bin_ser_2 bin_ser_3 bin_ser_4 bin_ser_5
+    scalar threshold = 0.5
+    scalar verbose = 1
+    list Lout = binary_encode(X, threshold)
+    assert_equal_num(nelem(Lout), nelem(X))
+    assert_equal_num(sum(Lout[1]), 2)
+    assert_equal_num(sum(Lout[2]), 2)
+    assert_equal_num(sum(Lout[3]), 1)
+    assert_false(ok(sum(Lout[4])))
+    assert_equal_num(sum(Lout[5]), 6)
+
+    assert_equal_str(varname(Lout[1]), "bin_ser_1_bin")
+    assert_equal_str(varname(Lout[2]), "bin_ser_2_bin")
+    assert_equal_str(varname(Lout[5]), "bin_ser_5_bin")
+
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 5)
+    assert_equal_num(nobs(Lout[3]), 4)
+    assert_equal_num(nobs(Lout[4]), 0)
+    assert_equal_num(nobs(Lout[5]), 6)
 
 
-print "Start with ohe_encode() and drop first option"
-list Lout = ohe_encode(ohe_ser_1, 1, 1)
-assert_equal_num(nelem(Lout), 1)
-assert_equal_num(sum(Lout[1]), 3)
-assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_1")
-
-print "Start with ohe_encode() and drop last option"
-list Lout = ohe_encode(ohe_ser_1, 2, 1)
-assert_equal_num(nelem(Lout), 1)
-assert_equal_num(sum(Lout[1]), 3)
-assert_equal_str(varname(Lout[1]), "ohe_ser_1_ohe_0")
-
-print "Start with ohe_encode() + NA for single obs"
-list Lout = ohe_encode(ohe_ser_2, 0, 1)
-assert_equal_num(nelem(Lout), 2)
-assert_equal_num(sum(Lout[1]), 3)
-assert_equal_num(sum(Lout[2]), 2)
-assert_equal_str(varname(Lout[1]), "ohe_ser_2_ohe_0")
-assert_equal_str(varname(Lout[2]), "ohe_ser_2_ohe_1")
-
-print "Start with ohe_encode() + NA values for all obs."
-list Lout = ohe_encode(ohe_ser_4, 0, 1)
-assert_equal_num(nelem(Lout), 0)
-
-print "Start with ohe_encode() + constant series"
-list Lout = ohe_encode(ohe_ser_5, 0, 1)
-assert_equal_num(nelem(Lout), 0)
+    print "Start with binary_encode() + suffix"
+    string suffix = "_foo"
+    list Lout = binary_encode(X, threshold, suffix)
+    assert_equal_num(nelem(Lout), nelem(X))
+    assert_equal_str(varname(Lout[1]), "bin_ser_1_foo")
+    assert_equal_str(varname(Lout[2]), "bin_ser_2_foo")
+    assert_equal_str(varname(Lout[5]), "bin_ser_5_foo")
+end function
 
 
-print "Start with binary_encode()"
-list X = bin_ser_1 bin_ser_2 bin_ser_3 bin_ser_4 bin_ser_5
-scalar threshold = 0.5
-scalar verbose = 1
-list Lout = binary_encode(X, threshold)
-assert_equal_num(nelem(Lout), nelem(X))
-assert_equal_num(sum(Lout[1]), 2)
-assert_equal_num(sum(Lout[2]), 2)
-assert_equal_num(sum(Lout[3]), 1)
-assert_false(ok(sum(Lout[4])))
-assert_equal_num(sum(Lout[5]), 6)
+function void test_means_encode (void)
+    print "Start with means_encode()"
+    series groups = {1,1,1,2,2,2}
+    setinfo groups --discrete
+    series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
+    series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
+    series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
+    series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
+    series ser_5 = 1
 
-assert_equal_str(varname(Lout[1]), "bin_ser_1_bin")
-assert_equal_str(varname(Lout[2]), "bin_ser_2_bin")
-assert_equal_str(varname(Lout[5]), "bin_ser_5_bin")
+    list X = ser_1 ser_2 ser_3 ser_4 ser_5
+    scalar verbose = 1
+    list Lout = means_encode(X, groups, , verbose)
+    assert_equal_num(nelem(Lout), nelem(X))
+    assert_equal_str(varname(Lout[1]), "ser_1_mean")
+    assert_equal_str(varname(Lout[2]), "ser_2_mean")
+    assert_equal_str(varname(Lout[5]), "ser_5_mean")
 
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 5)
-assert_equal_num(nobs(Lout[3]), 4)
-assert_equal_num(nobs(Lout[4]), 0)
-assert_equal_num(nobs(Lout[5]), 6)
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
+    assert_equal_num(nobs(Lout[4]), 3)
+    assert_equal_num(nobs(Lout[5]), 6)
 
+    # Check values for group 1
+    smpl groups == 1 --restrict --replace
+    assert_almost_equal_num(mean(Lout[1]), 0.93)
+    assert_equal_num(mean(Lout[2]), 0.46)
+    assert_almost_equal_num(mean(Lout[3]), 0.296, 1e-3)
+    assert_almost_equal_num(mean(Lout[4]), 0.125, 1e-3)
+    assert_equal_num(mean(Lout[5]), 1)
 
-print "Start with binary_encode() + suffix"
-string suffix = "_foo"
-list Lout = binary_encode(X, threshold, suffix)
-assert_equal_num(nelem(Lout), nelem(X))
-assert_equal_str(varname(Lout[1]), "bin_ser_1_foo")
-assert_equal_str(varname(Lout[2]), "bin_ser_2_foo")
-assert_equal_str(varname(Lout[5]), "bin_ser_5_foo")
+    # Check values for group 2
+    smpl groups == 2 --restrict --replace
+    assert_almost_equal_num(mean(Lout[1]), 0.333, 1e-3)
+    assert_almost_equal_num(mean(Lout[2]), 0.726, 1e-3)
+    assert_almost_equal_num(mean(Lout[3]), 0.496, 1e-3)
+    assert_false(ok(sum(Lout[4])))
+    assert_equal_num(mean(Lout[5]), 1)
+end function
 
-
-print "Start with means_encode()"
-list X = ser_1 ser_2 ser_3 ser_4 ser_5
-scalar verbose = 1
-list Lout = means_encode(X, groups, , verbose)
-assert_equal_num(nelem(Lout), nelem(X))
-assert_equal_str(varname(Lout[1]), "ser_1_mean")
-assert_equal_str(varname(Lout[2]), "ser_2_mean")
-assert_equal_str(varname(Lout[5]), "ser_5_mean")
-
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
-assert_equal_num(nobs(Lout[4]), 3)
-assert_equal_num(nobs(Lout[5]), 6)
-
-
-# Check values for group 1
-smpl groups == 1 --restrict --replace
-assert_almost_equal_num(mean(Lout[1]), 0.93)
-assert_equal_num(mean(Lout[2]), 0.46)
-assert_almost_equal_num(mean(Lout[3]), 0.296, 1e-3)
-assert_almost_equal_num(mean(Lout[4]), 0.125, 1e-3) 
-assert_equal_num(mean(Lout[5]), 1)
-    
+function void test_median_encode (void)
+    print "Start with median_encode()"
+    series groups = {1,1,1,2,2,2}
+    setinfo groups --discrete
+    series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
+    series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
+    series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
+    series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
+    series ser_5 = 1
+    series ser_6 = {0.20, NA, 0.05, 0.82, 0.27, 0.40}
 
 
-# Check values for group 2
-smpl groups == 2 --restrict --replace
-assert_almost_equal_num(mean(Lout[1]), 0.333, 1e-3)
-assert_almost_equal_num(mean(Lout[2]), 0.726, 1e-3)
-assert_almost_equal_num(mean(Lout[3]), 0.496, 1e-3)
-assert_false(ok(sum(Lout[4])))
-assert_equal_num(mean(Lout[5]), 1)
-    
+    list X = ser_1 ser_2 ser_3 ser_4 ser_5
+    scalar verbose = 1
+    list Lout = median_encode(X, groups, , verbose)
+    assert_equal_num(nelem(Lout), nelem(X))
+    assert_equal_str(varname(Lout[1]), "ser_1_median")
+    assert_equal_str(varname(Lout[2]), "ser_2_median")
+    assert_equal_str(varname(Lout[5]), "ser_5_median")
 
-print "Start with median_encode()"
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
+    assert_equal_num(nobs(Lout[4]), 3)
+    assert_equal_num(nobs(Lout[5]), 6)
+
+    # Check values for group 1
+    smpl groups == 1 --restrict --replace
+    assert_almost_equal_num(mean(Lout[1]), 0.95)
+    assert_equal_num(mean(Lout[2]), 0.53)
+    assert_almost_equal_num(mean(Lout[3]), 0.2, 1e-3)
+    assert_almost_equal_num(mean(Lout[4]), 0.125, 1e-3)
+    assert_equal_num(mean(Lout[5]), 1)
+
+    # Check values for group 2
+    smpl groups == 2 --restrict --replace
+    assert_almost_equal_num(mean(Lout[1]), 0.28, 1e-3)
+    assert_almost_equal_num(mean(Lout[2]), 0.69, 1e-3)
+    assert_almost_equal_num(mean(Lout[3]), 0.4, 1e-3)
+    assert_false(ok(sum(Lout[4])))
+    assert_equal_num(mean(Lout[5]), 1)
+end function
+
+
 smpl full
-list X = ser_1 ser_2 ser_3 ser_4 ser_5
-scalar verbose = 1
-list Lout = median_encode(X, groups, , verbose)
-assert_equal_num(nelem(Lout), nelem(X))
-assert_equal_str(varname(Lout[1]), "ser_1_median")
-assert_equal_str(varname(Lout[2]), "ser_2_median")
-assert_equal_str(varname(Lout[5]), "ser_5_median")
+function void test_pca_encode (void)
+    print "Start with pca_encode()"
 
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
-assert_equal_num(nobs(Lout[4]), 3)
-assert_equal_num(nobs(Lout[5]), 6)   
+    series groups = {1,1,1,2,2,2}
+    setinfo groups --discrete
+    series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
+    series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
+    series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
+    series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
+    series ser_5 = 1
+    series ser_6 = {0.20, NA, 0.05, 0.82, 0.27, 0.40}
 
 
-# Check values for group 1
-smpl groups == 1 --restrict --replace
-assert_almost_equal_num(mean(Lout[1]), 0.95)
-assert_equal_num(mean(Lout[2]), 0.53)
-assert_almost_equal_num(mean(Lout[3]), 0.2, 1e-3)
-assert_almost_equal_num(mean(Lout[4]), 0.125, 1e-3)
-assert_equal_num(mean(Lout[5]), 1)
-    
+    list X = ser_1 ser_2 ser_3
+    scalar num_components = 0
+    scalar verbose = 1
+    print groups X -o
+    list Lout = pca_encode(X, groups, num_components, ,verbose)
 
-# Check values for group 2
-smpl groups == 2 --restrict --replace
-assert_almost_equal_num(mean(Lout[1]), 0.28, 1e-3)
-assert_almost_equal_num(mean(Lout[2]), 0.69, 1e-3)
-assert_almost_equal_num(mean(Lout[3]), 0.4, 1e-3)
-assert_false(ok(sum(Lout[4])))
-assert_equal_num(mean(Lout[5]), 1)
+    assert_equal_num(nelem(Lout), 3)
+    assert_equal_str(varname(Lout[1]), "ser_1_pca")
+    assert_equal_str(varname(Lout[2]), "ser_2_pca")
+    assert_equal_str(varname(Lout[3]), "ser_3_pca")
 
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
 
+    assert_equal_num(rows(values(Lout[1])), 2)
+    assert_equal_num(rows(values(Lout[2])), 2)
 
-print "Start with pca_encode()"
-smpl full
-list X = ser_1 ser_2 ser_3
-scalar num_components = 0
-scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, ,verbose)
-assert_equal_num(nelem(Lout), 3)
-assert_equal_str(varname(Lout[1]), "ser_1_pca")
-assert_equal_str(varname(Lout[2]), "ser_2_pca")
-assert_equal_str(varname(Lout[3]), "ser_3_pca")
-    
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
+    assert_almost_equal_num(values(Lout[1])[1], -1.581, 1e-3)
+    assert_almost_equal_num(values(Lout[1])[2], 1.581, 1e-3)
 
-assert_equal_num(rows(values(Lout[1])), 2)
-assert_equal_num(rows(values(Lout[2])), 2)
+    assert_almost_equal_num(values(Lout[2])[1], 0, 1e-3)
+    assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
 
-assert_almost_equal_num(values(Lout[1])[1], -1.581, 1e-3)
-assert_almost_equal_num(values(Lout[1])[2], 1.581, 1e-3)
+    assert_almost_equal_num(values(Lout[3])[1], 0, 1e-3)
 
-assert_almost_equal_num(values(Lout[2])[1], 0, 1e-3)
-assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
-
-assert_almost_equal_num(values(Lout[3])[1], 0, 1e-3)
-assert_almost_equal_num(values(Lout[3])[2], 0, 1e-3)
-    
+    #with  constant series
+    list X = ser_1 ser_2 ser_3 ser_5
+    scalar verbose = 1
+    list Lout = pca_encode(X, groups, num_components, , verbose)
+    assert_equal_num(nelem(Lout), 0)
 
 
-print "pca_encode() with constant series"
-list X = ser_1 ser_2 ser_3 ser_5
-scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, , verbose)
-assert_equal_num(nelem(Lout), 0)
+    # with single factor + own suffix
+    list X = ser_1 ser_2 ser_3
+    scalar num_components = 1
+    scalar verbose = 1
+    string suffix = "_foo"
+    list Lout = pca_encode(X, groups, num_components, suffix, verbose)
+    assert_equal_num(nelem(Lout), 1)
+    assert_equal_str(varname(Lout[1]), "ser_1_foo")
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(rows(values(Lout[1])), 2)
+    assert_almost_equal_num(values(Lout[1])[1], -1.581, 1e-3)
+    assert_almost_equal_num(values(Lout[1])[2], 1.581, 1e-3)
+
+    # with NA value in X"
+    list X = ser_1 ser_2 ser_3 ser_6
+    scalar num_components = 0
+    scalar verbose = 1
+    list Lout = pca_encode(X, groups, num_components, , verbose)
+
+    assert_equal_num(nelem(Lout), 4)
+    assert_equal_str(varname(Lout[1]), "ser_1_pca")
+    assert_equal_str(varname(Lout[4]), "ser_6_pca")
+
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
+    assert_equal_num(nobs(Lout[4]), 6)
+
+    assert_equal_num(rows(values(Lout[1])), 2)
+    assert_equal_num(rows(values(Lout[4])), 2)
+
+    assert_almost_equal_num(values(Lout[1])[1], -1.825, 1e-3)
+    assert_almost_equal_num(values(Lout[1])[2], 1.825, 1e-3)
+
+    assert_almost_equal_num(values(Lout[2])[1], 0, 1e-3)
+    assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
+
+    assert_almost_equal_num(values(Lout[3])[1], 0, 1e-3)
+    assert_almost_equal_num(values(Lout[3])[2], 0, 1e-3)
+
+    assert_almost_equal_num(values(Lout[4])[1], 0, 1e-3)
+    assert_almost_equal_num(values(Lout[4])[2], 0, 1e-3)
+end function
 
 
-print "pca_encode() with single factor + own suffix"
-list X = ser_1 ser_2 ser_3
-scalar num_components = 1
-scalar verbose = 1
-string suffix = "_foo"
-list Lout = pca_encode(X, groups, num_components, suffix, verbose)
-assert_equal_num(nelem(Lout), 1)
-assert_equal_str(varname(Lout[1]), "ser_1_foo")
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(rows(values(Lout[1])), 2)
-assert_almost_equal_num(values(Lout[1])[1], -1.581, 1e-3)
-assert_almost_equal_num(values(Lout[1])[2], 1.581, 1e-3)
-    
+function void test_low_rank_encode (void)
+    print "Start with low_rank_encode()"
 
-print "Start with pca_encode() + NA value in X"
-smpl full
-list X = ser_1 ser_2 ser_3 ser_6
-scalar num_components = 0
-scalar verbose = 1
-list Lout = pca_encode(X, groups, num_components, , verbose)
+    series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
+    series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
+    series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
+    series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
+    series ser_5 = 1
+    series ser_6 = {0.20, NA, 0.05, 0.82, 0.27, 0.40}
+    series groups = {1,1,1,2,2,2}
+    setinfo groups --discrete
 
-assert_equal_num(nelem(Lout), 4)
-assert_equal_str(varname(Lout[1]), "ser_1_pca")
-assert_equal_str(varname(Lout[4]), "ser_6_pca")
+    list X = ser_1 ser_2 ser_3
+    scalar num_components = 0
+    scalar verbose = 1
+    list Lout = low_rank_encode(X, groups, num_components, , verbose)
+    strings names = varnames(Lout)
+    matrix uniq_1 = uniq(Lout[1])
+    matrix uniq_2 = uniq(Lout[2])
+    matrix uniq_3 = uniq(Lout[3])
 
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
-assert_equal_num(nobs(Lout[4]), 6)
+    assert_equal_num(nelem(Lout), 3)
 
-assert_equal_num(rows(values(Lout[1])), 2)
-assert_equal_num(rows(values(Lout[4])), 2)    
+    assert_equal_str(names[1], "ser_1_svd")
+    assert_equal_str(names[2], "ser_2_svd")
+    assert_equal_str(names[3], "ser_3_svd")
 
-assert_almost_equal_num(values(Lout[1])[1], -1.825, 1e-3)
-assert_almost_equal_num(values(Lout[1])[2], 1.825, 1e-3)
-    
-assert_almost_equal_num(values(Lout[2])[1], 0, 1e-3)
-assert_almost_equal_num(values(Lout[2])[2], 0, 1e-3)
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
 
-assert_almost_equal_num(values(Lout[3])[1], 0, 1e-3)
-assert_almost_equal_num(values(Lout[3])[2], 0, 1e-3)
+    assert_almost_equal_num(uniq_1[1], -0.442, 1e-3)
+    assert_almost_equal_num(uniq_1[4], -0.371, 1e-3)
 
-assert_almost_equal_num(values(Lout[4])[1], 0, 1e-3)
-assert_almost_equal_num(values(Lout[4])[2], 0, 1e-3)
-    
+    assert_almost_equal_num(uniq_2[1], 0.371, 1e-3)
+    assert_almost_equal_num(uniq_2[4], -0.442, 1e-3)
 
-print "Start with low_rank_encode()"
-smpl full
-list X = ser_1 ser_2 ser_3
-scalar num_components = 0
-scalar verbose = 1
-list Lout = low_rank_encode(X, groups, num_components, , verbose)
-assert_equal_num(nelem(Lout), 3)
-assert_equal_str(varname(Lout[1]), "ser_1_svd")
-assert_equal_str(varname(Lout[2]), "ser_2_svd")
-assert_equal_str(varname(Lout[3]), "ser_3_svd")
+    assert_almost_equal_num(uniq_3[1], -0.093, 1e-3)
+    assert_almost_equal_num(uniq_3[2], 0.749, 1e-3)
+    assert_almost_equal_num(uniq_3[3], -0.655, 1e-3)
+    assert_almost_equal_num(uniq_3[4], 0, 1e-3)
 
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
+    # with constant series
+    list X = ser_1 ser_2 ser_3 ser_5
+    scalar num_components = 0
+    string suffix = "_foo"
+    scalar verbose = 1
+    list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+    assert_equal_num(nelem(Lout), 0)
 
-assert_almost_equal_num(uniq(Lout[1])[1], 0.442, 1e-3)
-assert_almost_equal_num(uniq(Lout[1])[2], 0.371, 1e-3)
-assert_almost_equal_num(uniq(Lout[2])[1], 0.371, 1e-3)
-assert_almost_equal_num(uniq(Lout[2])[2], -0.442, 1e-3)
-assert_almost_equal_num(uniq(Lout[3])[1], 0, 1e-3)
-assert_almost_equal_num(uniq(Lout[3])[2], 0, 1e-3)
+    # with NA for single obs. + suffix
+    list X = ser_1 ser_2 ser_3 ser_6
+    scalar num_components = 0
+    string suffix = "_foo"
+    scalar verbose = 1
+    list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
+    strings names = varnames(Lout)
+    matrix uniq_1 = uniq(Lout[1])
+    matrix uniq_2 = uniq(Lout[2])
+    matrix uniq_3 = uniq(Lout[3])
+    matrix uniq_4 = uniq(Lout[4])
 
+    assert_equal_num(nelem(Lout), 4)
 
-print "Start with low_rank_encode() with constant series"
-smpl full
-list X = ser_1 ser_2 ser_3 ser_5
-scalar num_components = 0
-string suffix = "_foo"
-scalar verbose = 1
-list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
-assert_equal_num(nelem(Lout), 0)
-    
+    assert_equal_str(names[1], "ser_1_foo")
+    assert_equal_str(names[2], "ser_2_foo")
+    assert_equal_str(names[3], "ser_3_foo")
+    assert_equal_str(names[4], "ser_6_foo")
 
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
+    assert_equal_num(nobs(Lout[4]), 6)
 
-print "Start with low_rank_encode() with NA for single obs. + suffix"
-smpl full
-list X = ser_1 ser_2 ser_3 ser_6
-scalar num_components = 0
-string suffix = "_foo"
-scalar verbose = 1
-list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
-assert_equal_num(nelem(Lout), 4)
-assert_equal_str(varname(Lout[1]), "ser_1_foo")
-assert_equal_str(varname(Lout[2]), "ser_2_foo")
-assert_equal_str(varname(Lout[3]), "ser_3_foo")
-assert_equal_str(varname(Lout[4]), "ser_6_foo")
+    assert_almost_equal_num(uniq_1[1], -0.413, 1e-3)
+    assert_almost_equal_num(uniq_1[2], -0.413, 1e-3)
+    assert_almost_equal_num(uniq_1[3], -0.402, 1e-3)
 
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[4]), 6)
+    assert_almost_equal_num(uniq_2[1], -0.402, 1e-3)
+    assert_almost_equal_num(uniq_2[2], -0.402, 1e-3)
+    assert_almost_equal_num(uniq_2[3], 0.413, 1e-3)
 
-assert_almost_equal_num(uniq(Lout[1])[1], 0.413, 1e-3)
-assert_almost_equal_num(uniq(Lout[1])[2], 0.402, 1e-3)
+    assert_almost_equal_num(uniq_3[1], 0.816, 1e-3)
+    assert_almost_equal_num(uniq_3[2], -0.384, 1e-3)
+    assert_almost_equal_num(uniq_3[3], -0.431, 1e-3)
+    assert_almost_equal_num(uniq_3[4], 0, 1e-3)
 
-assert_almost_equal_num(uniq(Lout[2])[1], -0.402, 1e-3)
-assert_almost_equal_num(uniq(Lout[2])[2], 0.413, 1e-3)
-
-assert_almost_equal_num(uniq(Lout[3])[1], 0, 1e-3)
-assert_almost_equal_num(uniq(Lout[3])[2], 0, 1e-3)    
-
-assert_almost_equal_num(uniq(Lout[4])[1], 0, 1e-3)
-assert_almost_equal_num(uniq(Lout[4])[2], 0, 1e-3)
-    
-
-print "Start with mnl_encode()"
-list X = ser_1 ser_2 ser_3
-scalar verbose = 1
-list Lout = mnl_encode(X, groups, , verbose)
-assert_equal_num(nelem(Lout), 3)
-assert_equal_str(varname(Lout[1]), "ser_1_mnl")
-assert_equal_str(varname(Lout[2]), "ser_2_mnl")
-assert_equal_str(varname(Lout[3]), "ser_3_mnl")
-
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
-
-assert_equal_num(uniq(Lout[1])[1], 1)
-assert_almost_equal_num(uniq(Lout[1])[2], -81.916, 1e-3)
-
-assert_equal_num(uniq(Lout[2])[1], 1)
-assert_almost_equal_num(uniq(Lout[2])[2], 11.064, 1e-3)
-assert_equal_num(uniq(Lout[3])[1], 1)
-assert_almost_equal_num(uniq(Lout[3])[2], -39.187, 1e-3)
+    assert_almost_equal_num(uniq_4[1], 0.027, 1e-3)
+    assert_almost_equal_num(uniq_4[2], -0.720, 1e-3)
+    assert_almost_equal_num(uniq_4[3], 0.692, 1e-3)
+    assert_almost_equal_num(uniq_4[4], 0, 1e-3)
+end function
 
 
-print "Start with mnl_encode() + NA values for a complete group"
-smpl full
-list X = ser_1 ser_2 ser_3 ser_4
-scalar verbose = 1
-list Lout = mnl_encode(X, groups, , verbose)
-assert_equal_num(nelem(Lout), 0)
-    
+function void test_mnl_encode (void)
+    print "Start with mnl_encode()"
+    series ser_1 = {0.95, 0.86, 0.98, 0.28, 0.54, 0.18}
+    series ser_2 = {0.53, 0.71, 0.14, 0.91, 0.58, 0.69}
+    series ser_3 = {0.20, 0.64, 0.05, 0.82, 0.27, 0.40}
+    series ser_4 = {0.20, NA, 0.05, NA, NA, NA}
+    series ser_5 = 1
+    series ser_6 = {0.20, NA, 0.05, 0.82, 0.27, 0.40}
+    series groups = {1,1,1,2,2,2}
+    setinfo groups --discrete
 
-print "Start with mnl_encode() + NA values for a single obs."
-smpl full
-list X = ser_1 ser_2 ser_3 ser_6
-scalar verbose = 1
-list Lout = mnl_encode(X, groups, , verbose)
-assert_equal_num(nelem(Lout), 0)
-    
+    list X = ser_1 ser_2 ser_3
+    scalar verbose = 1
+    list Lout = mnl_encode(X, groups, , verbose)
+    assert_equal_num(nelem(Lout), 3)
+    assert_equal_str(varname(Lout[1]), "ser_1_mnl")
+    assert_equal_str(varname(Lout[2]), "ser_2_mnl")
+    assert_equal_str(varname(Lout[3]), "ser_3_mnl")
 
-print "Start with mnl_encode() + const series"
-smpl full
-list X = ser_1 ser_2 ser_3 ser_5
-scalar verbose = 1
-list Lout = mnl_encode(X, groups, , verbose)
-assert_equal_num(nelem(Lout), 4)
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
 
-print "mnl_encode() + own suffix"
-list X = ser_1 ser_2 ser_3
-string suffix = "_foo"
-list Lout = mnl_encode(X, groups, suffix, verbose)
-assert_equal_num(nelem(Lout), 3)
-assert_equal_str(varname(Lout[1]), "ser_1_foo")
-assert_equal_str(varname(Lout[2]), "ser_2_foo")
-assert_equal_str(varname(Lout[3]), "ser_3_foo")
-    
-assert_equal_num(nobs(Lout[1]), 6)
-assert_equal_num(nobs(Lout[2]), 6)
-assert_equal_num(nobs(Lout[3]), 6)
+    assert_equal_num(uniq(Lout[1])[1], 1)
+    assert_almost_equal_num(uniq(Lout[1])[2], -81.916, 1e-3)
 
+    assert_equal_num(uniq(Lout[2])[1], 1)
+    assert_almost_equal_num(uniq(Lout[2])[2], 11.064, 1e-3)
+    assert_equal_num(uniq(Lout[3])[1], 1)
+    assert_almost_equal_num(uniq(Lout[3])[2], -39.187, 1e-3)
+
+
+    print "Start with mnl_encode() + NA values for a complete group"
+    smpl full
+    list X = ser_1 ser_2 ser_3 ser_4
+    scalar verbose = 1
+    list Lout = mnl_encode(X, groups, , verbose)
+    assert_equal_num(nelem(Lout), 0)
+
+    print "Start with mnl_encode() + NA values for a single obs."
+    smpl full
+    list X = ser_1 ser_2 ser_3 ser_6
+    scalar verbose = 1
+    list Lout = mnl_encode(X, groups, , verbose)
+    assert_equal_num(nelem(Lout), 0)
+
+    print "Start with mnl_encode() + const series"
+    smpl full
+    list X = ser_1 ser_2 ser_3 ser_5
+    scalar verbose = 1
+    list Lout = mnl_encode(X, groups, , verbose)
+    assert_equal_num(nelem(Lout), 0)
+
+    print "mnl_encode() + own suffix"
+    list X = ser_1 ser_2 ser_3
+    string suffix = "_foo"
+    list Lout = mnl_encode(X, groups, suffix, verbose)
+    assert_equal_num(nelem(Lout), 3)
+    assert_equal_str(varname(Lout[1]), "ser_1_foo")
+    assert_equal_str(varname(Lout[2]), "ser_2_foo")
+    assert_equal_str(varname(Lout[3]), "ser_3_foo")
+
+    assert_equal_num(nobs(Lout[1]), 6)
+    assert_equal_num(nobs(Lout[2]), 6)
+    assert_equal_num(nobs(Lout[3]), 6)
+end function
+
+
+test_ohe_encode()
+test_means_encode()
+test_median_encode()
+test_pca_encode()
+test_low_rank_encode()
+test_mnl_encode()
 
 printf "\n\nInfo: All tests passed.\n"
 
