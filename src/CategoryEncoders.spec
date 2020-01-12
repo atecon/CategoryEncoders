@@ -1,7 +1,7 @@
 author = Artur Tarassow
 email = atecon@posteo.de
-version = 0.3
-date = 2020-01-03
+version = 0.31
+date = 2020-01-12
 description = Encoder based on categorical variables
 tags = C10
 min-version = 2018a

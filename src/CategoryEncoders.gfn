@@ -2,8 +2,8 @@
 <gretl-functions>
 <gretl-function-package name="CategoryEncoders" minver="2018a">
 <author email="atecon@posteo.de">Artur Tarassow</author>
-<version>0.3</version>
-<date>2020-01-03</date>
+<version>0.31</version>
+<date>2020-01-12</date>
 <description>Encoder based on categorical variables</description>
 <tags>C10</tags>
 <help>
@@ -194,6 +194,9 @@ List of named series with category-wise rank component values. The i-th series n
 
 Changelog:
 ----------
+Version 0.31 (Jan. 2020):
+- Switch back from tall_svd() to built-in svd() as gretl version 2020b (and as already the current git version) will include an optmized version of svd().
+
 Version 0.3 (Jan. 2020):
 - Bugfix: For mnl_encode(), no means encoding is applied on list X any more as this resulted in perfect collinearity issues.
 - Mean enocoding is done automatically when calling pca_encode() or low_rank_enocde(), and cannot be selected by the user.
@@ -396,8 +399,7 @@ if !series_g_isdiscrete(G) || !xlist_has_at_least_two_members(X) || !check_num_c
 endif
 list X = means_encode(X, G)
 smpl G X --no-missing
-#matrix sv = svd({X}, &amp;U, &amp;V)				# slower than tall_svd()
-matrix sv = tall_svd({X}, &amp;U, &amp;V)
+matrix sv = svd({X}, &amp;U, &amp;V)
 scalar counter = 0
 loop foreach i X -q
   list R += genseries(sprintf(&quot;%s%s&quot;, xnames[i], suffix), U[,i])
@@ -554,22 +556,6 @@ loop i=1..rows(groups) -q
   smpl full			# For some reason --replace option does not work
 endloop
 return R
-</code>
-</gretl-function>
-<gretl-function name="tall_svd" type="matrix" private="1">
- <params count="3">
-  <param name="X" type="matrix" const="true"/>
-  <param name="U" type="matrixref"/>
-  <param name="V" type="matrixref"/>
- </params>
-<code>/* Special-case svd when X has lots of rows and few columns. Faster than built-in svd().
-Written by Jack Lucchetti. */
-scalar c = cols(X)
-matrix lambdas = eigensym(X'X, &amp;V)
-lambdas = mreverse(sqrt(lambdas))'
-V = V[,seq(c,1)]
-U = X*(V./lambdas)
-return lambdas
 </code>
 </gretl-function>
 <gretl-function name="series_g_isdiscrete" type="scalar" private="1">

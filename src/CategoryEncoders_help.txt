@@ -185,6 +185,9 @@ List of named series with category-wise rank component values. The i-th series n
 
 Changelog:
 ----------
+Version 0.31 (Jan. 2020):
+- Switch back from tall_svd() to built-in svd() as gretl version 2020b (and as already the current git version) will include an optmized version of svd().
+
 Version 0.3 (Jan. 2020):
 - Bugfix: For mnl_encode(), no means encoding is applied on list X any more as this resulted in perfect collinearity issues.
 - Mean enocoding is done automatically when calling pca_encode() or low_rank_enocde(), and cannot be selected by the user.
