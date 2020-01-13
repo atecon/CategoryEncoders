@@ -389,7 +389,6 @@ function void test_mnl_encode (void)
     assert_equal_num(uniq(Lout[3])[1], 1)
     assert_almost_equal_num(uniq(Lout[3])[2], -39.187, 1e-3)
 
-
     print "Start with mnl_encode() + NA values for a complete group"
     smpl full
     list X = ser_1 ser_2 ser_3 ser_4
