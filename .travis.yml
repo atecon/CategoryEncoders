@@ -20,4 +20,4 @@ before_install:
   - docker exec -it test gretlcli -i assertion
 
 script:
-  - docker exec -it test /bin/bash run-tests.sh
+  - docker exec -it test /bin/bash run_tests.sh
