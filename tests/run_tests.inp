@@ -303,16 +303,14 @@ function void test_low_rank_encode (void)
     assert_equal_num(nobs(Lout[2]), 6)
     assert_equal_num(nobs(Lout[3]), 6)
 
-    assert_almost_equal_num(uniq_1[1], -0.442, 1e-3)
-    assert_almost_equal_num(uniq_1[4], -0.371, 1e-3)
+    assert_almost_equal_num(abs(uniq_1)[1], 0.442, 1e-3)
+    assert_almost_equal_num(abs(uniq_1)[2], 0.371, 1e-3)
 
-    assert_almost_equal_num(uniq_2[1], 0.371, 1e-3)
-    assert_almost_equal_num(uniq_2[4], -0.442, 1e-3)
+    assert_almost_equal_num(abs(uniq_2)[1], 0.371, 1e-3)
+    assert_almost_equal_num(abs(uniq_2)[2], 0.442, 1e-3)
 
-    assert_almost_equal_num(uniq_3[1], -0.093, 1e-3)
-    assert_almost_equal_num(uniq_3[2], 0.749, 1e-3)
-    assert_almost_equal_num(uniq_3[3], -0.655, 1e-3)
-    assert_almost_equal_num(uniq_3[4], 0, 1e-3)
+    assert_almost_equal_num(abs(uniq_3)[1], 0, 1e-3)
+    assert_almost_equal_num(abs(uniq_3)[2], 0, 1e-3)
 
     # with constant series
     list X = ser_1 ser_2 ser_3 ser_5
@@ -345,24 +343,18 @@ function void test_low_rank_encode (void)
     assert_equal_num(nobs(Lout[2]), 6)
     assert_equal_num(nobs(Lout[3]), 6)
     assert_equal_num(nobs(Lout[4]), 6)
+   
+    assert_almost_equal_num(abs(uniq_1)[1], 0.413, 1e-3)
+    assert_almost_equal_num(abs(uniq_1)[2], 0.402, 1e-3)
 
-    assert_almost_equal_num(uniq_1[1], -0.413, 1e-3)
-    assert_almost_equal_num(uniq_1[2], -0.413, 1e-3)
-    assert_almost_equal_num(uniq_1[3], -0.402, 1e-3)
+    assert_almost_equal_num(abs(uniq_2)[1], 0.402, 1e-3)
+    assert_almost_equal_num(abs(uniq_2)[2], 0.413, 1e-3)
 
-    assert_almost_equal_num(uniq_2[1], -0.402, 1e-3)
-    assert_almost_equal_num(uniq_2[2], -0.402, 1e-3)
-    assert_almost_equal_num(uniq_2[3], 0.413, 1e-3)
+    assert_almost_equal_num(abs(uniq_3)[1], 0, 1e-3)
+    assert_almost_equal_num(abs(uniq_3)[2], 0, 1e-3)
 
-    assert_almost_equal_num(uniq_3[1], 0.816, 1e-3)
-    assert_almost_equal_num(uniq_3[2], -0.384, 1e-3)
-    assert_almost_equal_num(uniq_3[3], -0.431, 1e-3)
-    assert_almost_equal_num(uniq_3[4], 0, 1e-3)
-
-    assert_almost_equal_num(uniq_4[1], 0.027, 1e-3)
-    assert_almost_equal_num(uniq_4[2], -0.720, 1e-3)
-    assert_almost_equal_num(uniq_4[3], 0.692, 1e-3)
-    assert_almost_equal_num(uniq_4[4], 0, 1e-3)
+    assert_almost_equal_num(abs(uniq_4)[1], 0, 1e-3)
+    assert_almost_equal_num(abs(uniq_4)[2], 0, 1e-3)
 end function
 
 
@@ -437,8 +429,8 @@ end function
 test_ohe_encode()
 test_means_encode()
 test_median_encode()
-#test_pca_encode()
-#test_low_rank_encode()
+test_pca_encode()
+test_low_rank_encode()
 test_mnl_encode()
 
 printf "\n\nInfo: All tests passed.\n"
