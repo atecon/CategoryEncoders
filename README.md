@@ -1,4 +1,7 @@
 # CategoryEncoders
+
+[![Build Status](https://travis-ci.org/atecon/CategoryEncoders.svg?branch=master)](https://travis-ci.org/atecon/CategoryEncoders)
+
 A set of gretl transformers for encoding categorical variables into numeric with different techniques. Many econometric techniques and learning algorithms require categorical data to be transformed into real vectors before it can be used as input. 
 
 The mean, median, pca, low-rank and multinomial logit encoding techniques are inspired by the paper of Athey et al. (2019) entitled ["Sufficient Representations for Categorical Variables"] (https://arxiv.org/abs/1908.09874). Their github project-page can be found [here] (https://github.com/grf-labs/sufrep). The authors propose lower-dimensional real-values representations of categorical variables that are sufficient in the sense that no predictive information is lost.
