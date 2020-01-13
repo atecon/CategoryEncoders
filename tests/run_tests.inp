@@ -437,8 +437,8 @@ end function
 test_ohe_encode()
 test_means_encode()
 test_median_encode()
-test_pca_encode()
-test_low_rank_encode()
+#test_pca_encode()
+#test_low_rank_encode()
 test_mnl_encode()
 
 printf "\n\nInfo: All tests passed.\n"
