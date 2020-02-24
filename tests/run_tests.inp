@@ -327,10 +327,10 @@ function void test_low_rank_encode (void)
     scalar verbose = 1
     list Lout = low_rank_encode(X, groups, num_components, suffix, verbose)
     strings names = varnames(Lout)
-    matrix uniq_1 = uniq(Lout[1])
-    matrix uniq_2 = uniq(Lout[2])
-    matrix uniq_3 = uniq(Lout[3])
-    matrix uniq_4 = uniq(Lout[4])
+    matrix uniq_1 = values(abs(Lout[1]))
+    matrix uniq_2 = values(abs(Lout[2]))
+    matrix uniq_3 = values(abs(Lout[3]))
+    matrix uniq_4 = values(abs(Lout[4]))
 
     assert_equal_num(nelem(Lout), 4)
 
@@ -344,16 +344,16 @@ function void test_low_rank_encode (void)
     assert_equal_num(nobs(Lout[3]), 6)
     assert_equal_num(nobs(Lout[4]), 6)
    
-    print Lout -o 
+    print Lout -o
+    
+    assert_almost_equal_num(uniq_1[1], 0.402, 1e-3)
+    assert_almost_equal_num(uniq_1[rows(uniq_1)], 0.41, 1e-2)
 
-    assert_almost_equal_num(abs(uniq_1)[1], 0.413, 1e-3)
-    assert_almost_equal_num(abs(uniq_1)[2], 0.402, 1e-3)
+    assert_almost_equal_num(uniq_2[1], 0.402, 1e-3)
+    assert_almost_equal_num(uniq_2[rows(uniq_2)], 0.41, 1e-2)
 
-    assert_almost_equal_num(abs(uniq_2)[1], 0.402, 1e-3)
-    assert_almost_equal_num(abs(uniq_2)[2], 0.413, 1e-3)
-
-    assert_almost_equal_num(abs(uniq_3)[1], 0, 1e-3)
-    assert_almost_equal_num(abs(uniq_3)[2], 0, 1e-3)
+    assert_almost_equal_num(uniq_3[1], 0, 1e-3)
+    assert_almost_equal_num(uniq_3[2], 0.037, 1e-3)
 
 #    assert_almost_equal_num(abs(uniq_4)[1], 0, 1e-3)			# results of pca seem to vary from machine to machine
 #    assert_almost_equal_num(abs(uniq_4)[2], 0, 1e-3)    
@@ -410,7 +410,7 @@ function void test_mnl_encode (void)
     list X = ser_1 ser_2 ser_3 ser_5
     scalar verbose = 1
     list Lout = mnl_encode(X, groups, , verbose)
-    assert_equal_num(nelem(Lout), 0)
+    assert_equal_num(nelem(Lout), 4)
 
     print "mnl_encode() + own suffix"
     list X = ser_1 ser_2 ser_3
