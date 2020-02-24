@@ -351,12 +351,6 @@ function void test_low_rank_encode (void)
 
     assert_almost_equal_num(uniq_2[1], 0.402, 1e-3)
     assert_almost_equal_num(uniq_2[rows(uniq_2)], 0.41, 1e-2)
-
-    assert_almost_equal_num(uniq_3[1], 0, 1e-3)
-    assert_almost_equal_num(uniq_3[rows(uniq_3)], 0.72, 1e-2)
-
-#    assert_almost_equal_num(abs(uniq_4)[1], 0, 1e-3)			# results of pca seem to vary from machine to machine
-#    assert_almost_equal_num(abs(uniq_4)[2], 0, 1e-3)    
 end function
 
 
