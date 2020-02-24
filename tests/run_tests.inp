@@ -404,7 +404,7 @@ function void test_mnl_encode (void)
     list X = ser_1 ser_2 ser_3 ser_5
     scalar verbose = 1
     list Lout = mnl_encode(X, groups, , verbose)
-    assert_equal_num(nelem(Lout), 4)
+    assert_equal_num(nelem(Lout), 0)
 
     print "mnl_encode() + own suffix"
     list X = ser_1 ser_2 ser_3
