@@ -5,6 +5,6 @@ date = 2021-04-02
 description = Encoder based on categorical variables
 tags = C10
 min-version = 2018a
-public = ohe_encode binary_encode median_encode means_encode pca_encode low_rank_encode mnl_encode stats_by_group value_by_group
+public = ohe_encode binary_encode median_encode means_encode pca_encode low_rank_encode mnl_encode stats_by_group impose_by_group
 help = CategoryEncoders_help.txt
 sample-script = CategoryEncoders_sample.inp

@@ -149,8 +149,8 @@ function series stats_by_group (const series X "Target series",
 end function
 
 
-function series value_by_group (const series G "Group IDs",
-                                matrix V "Numerical values for each group")
+function series impose_by_group (const series G "Group IDs",
+                                 matrix V "Numerical values for each group")
     /* Impose group-wise values taken from vector V. The i-th entry
     in V is mapped onto the i-th group G[i].
     Return: Series with imposed values for each group. */
@@ -314,7 +314,7 @@ function list mnl_encode (const list X "Exogenous regressors",
 
     loop i=1..nelem(X) -q			# Note: must be '1+nelem(X)' in case the intercept is considered
         list R += genseries(sprintf("%s%s", xnames[i], suffix), \
-          value_by_group(G, beta[,i]))
+          impose_by_group(G, beta[,i]))
     endloop
 
     return R
