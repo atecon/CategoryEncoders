@@ -4,6 +4,7 @@ function list ohe_encode (const series X "Discrete series",
     /* One-hot encoding aka 'dummification' of categorical variable. */
 
     list R = null
+
     if !series_g_isdiscrete(X) || sum(ok(X)) == 0 || isconst(X)
         return R
     endif
@@ -17,7 +18,7 @@ function list ohe_encode (const series X "Discrete series",
     list R += D*
 
     # dependent on drop(1/2), either the 1st or last column of X_values
-    # must be droppped to ensure right naming in the following
+    # must be dropped to ensure right naming in the following
     X_values = (drop == 1) ? X_values[-1] : X_values
     X_values = (drop == 2) ? X_values[-rows(X_values)] : X_values
 
@@ -75,12 +76,11 @@ function list means_or_median_encode (const list X "List of series",
         return R
     endif
 
-    string operation = "mean"
-    operation = (use_median) ? "median" : operation
+    string operation = (use_median) ? "median" : "mean"
 
     loop foreach i X -q
         list R += genseries(sprintf("%s_%s", varname(X.$i), suffix), \
-          series_with_groupwise_stats(X.$i, G, operation, verbose))
+                  stats_by_group(X.$i, G, operation, verbose))
 
         if verbose
             printf "\nInfo: Generated group-wise %s series %s_%s.\n", \
@@ -98,11 +98,12 @@ function list median_encode (const list X "List of series",
                              const bool verbose[0])
     /* Group-wise median computation wrapper function. */
 
+    scalar compute_median = 1
     if !exists(suffix)
         string suffix = "median"
     endif
 
-    return means_or_median_encode(X, G, 1, suffix, verbose)
+    return means_or_median_encode(X, G, compute_median, suffix, verbose)
 end function
 
 
@@ -112,63 +113,56 @@ function list means_encode (const list X "List of series",
                             const bool verbose[0])
     /* Group-wise mean computation wrapper function */
 
+    scalar compute_median = 0
     if !exists(suffix)
         string suffix = "mean"
     endif
 
-    return means_or_median_encode(X, G, 0, suffix, verbose)
+    return means_or_median_encode(X, G, compute_median, suffix, verbose)
 end function
 
 
-function series series_with_groupwise_stats (const series X "Exogenous regressors",
-                                             const series G "Holding group IDs",
-                                             const string operation "E.g. 'mean', 'sd' etc.",
-                                             const bool verbose[0])
-    /* Helper function for grouping series X by G, computing group-wise
-       statistics. Group-wise stats are imposed as values for constructing
-    a series */
+function series stats_by_group (const series X "Target series",
+                                const series G "Group IDs",
+                                const string operation "E.g. 'mean', 'sd' etc.",
+                                const bool verbose[0])
+    /* Function for grouping series X by G, computing group-wise
+       statistics. Group-wise stats are imposed as values for constructing a series. 'operation' must be supported by the aggregate() function.
+       Return: Series with statistical value for each group. */
 
     matrix agg = aggregate(X, G, @operation)
     matrix groups = values(G)
     series R = NA
 
     loop i=1..rows(groups) -q
-        catch smpl G == groups[i] --restrict --replace --quiet
-        if $error
-            if verbose
-                printf "\nWarning: No observation exists for group G=%d\n", groups[i]
-            endif
-            return R
+        series mask = (G == groups[i])
+
+        scalar value = agg[i,3]
+        if !ok(value) && verbose
+            printf "\nWarning: Could not compute statistics for group='%g'. Ignore.", groups[i]
+        else
+            series R = (mask == 1) ? value : R
         endif
-        series R = agg[i,3]
     endloop
-    smpl full
 
     return R
 end function
 
 
-function series series_with_groupwise_values (const series G,
-                                              const matrix V "Column vector of G scalar values",
-                                              const bool verbose[0])
-    /* Helper function imposing group-wise values taken from vector V. The i-th entry
-    in V is mapped onto the i-th group G[i]. */
+function series value_by_group (const series G "Group IDs",
+                                matrix V "Numerical values for each group")
+    /* Impose group-wise values taken from vector V. The i-th entry
+    in V is mapped onto the i-th group G[i].
+    Return: Series with imposed values for each group. */
 
+    V = vec(V)
     matrix groups = values(G)
+    errorif(nelem(V) != nelem(groups), "Number of groups must equal length of the vector with values to be imposed.")
     series R = NA
 
     loop i=1..rows(groups) -q
-        catch smpl G == groups[i] --restrict --replace --quiet
-
-        if $error
-            if verbose
-                printf "\nWarning: No observation exists for group G=%d\n", groups[i]
-            endif
-            return R
-        endif
-
-        series R = V[i]
-        smpl full			# For some reason --replace option does not work
+        series mask = (G == groups[i])
+        series R = (mask == 1) ? V[i] : R
     endloop
 
     return R
@@ -180,8 +174,10 @@ function list pca_encode (const list X "Exogenous regressors",
                           const int num_components[0::0] "Retrieve only first n PCs",
                           string suffix[null] "Suffix for returned series name",
                           const bool verbose[0])
-    /* Principal components anaylsis. mean_encode() will be run automatically. */
+    /* Principal components analysis. mean_encode() will be run automatically. */
 
+
+    list Xmeans = null
     list R = null
     list PC = null
     if !exists(suffix)
@@ -197,7 +193,7 @@ function list pca_encode (const list X "Exogenous regressors",
         return R
     endif
 
-    list X = means_encode(X, G)
+    list Xmeans = means_encode(X, G)
 
     if num_components
         string save_opt = sprintf("--save=%d", num_components)
@@ -205,13 +201,13 @@ function list pca_encode (const list X "Exogenous regressors",
         string save_opt = "--save-all"			# PCA on group-wise mean values
     endif
 
-    smpl G X --no-missing
+    smpl G Xmeans --no-missing
 
-    pca X @save_opt @verbose_opt
+    pca Xmeans @save_opt @verbose_opt
     list PC += PC*
 
     scalar counter = 0
-    loop foreach i X -q
+    loop foreach i Xmeans -q
         list R += genseries(sprintf("%s%s", xnames[i], suffix), PC[i])
         counter++
         if num_components > 0
@@ -290,8 +286,7 @@ function list mnl_encode (const list X "Exogenous regressors",
     strings xnames = varnames(X)
 
     if n_g_values == 1
-        printf "\nError: Dependent group-series %s must at least have two distinct values.", \
-          argname(G)
+        printf "\nError: Dependent group-series %s must at least have two distinct values.", argname(G)
         return R
     endif
     if !series_g_isdiscrete(G) || !xlist_has_at_least_two_members(X)
@@ -319,7 +314,7 @@ function list mnl_encode (const list X "Exogenous regressors",
 
     loop i=1..nelem(X) -q			# Note: must be '1+nelem(X)' in case the intercept is considered
         list R += genseries(sprintf("%s%s", xnames[i], suffix), \
-          series_with_groupwise_values(G, beta[,i]))
+          value_by_group(G, beta[,i]))
     endloop
 
     return R
@@ -330,17 +325,18 @@ function scalar series_g_isdiscrete (const series G "Discrete grouping series")
     /* Check whether grouping series G is discrete. */
 
     if !isdiscrete(G)
-        printf "\nError: Input series %s is not discrete. Check the 'setinfo' command.\n", \
-          argname(G)
+        printf "\nError: Input series %s is not discrete. Check gretl's setinfo' command.\n", argname(G)
         return 0
     endif
     return 1
 end function
 
+
 function scalar check_num_components (const list X,
                                       const int num_components[0::])
-    /* Helper function checking that number compoents supposed to store
-    does not exceed list members. */
+    /* Check that the number of components supposed to store does not
+    exceed the number of list members.
+    Return: 0 (FALSE) in case of an error, otherwise 1 (TRUE). */
 
     if num_components > nelem(X)
         printf "\nError: Argument num_components cannot be larger than length of list X."
@@ -349,8 +345,11 @@ function scalar check_num_components (const list X,
     return 1
 end function
 
+
 function scalar xlist_has_at_least_two_members (const list X)
-    /* Helper function checking number of elements in X */
+    /* Helper function checking number of elements in X.
+    Return: 0 (FALSE) in case of an error, otherwise 1 (TRUE).*/
+
     if nelem(X) < 2
         printf "\nError: At least 2 series must be in list X.\n"
         return 0
@@ -358,9 +357,10 @@ function scalar xlist_has_at_least_two_members (const list X)
     return 1
 end function
 
+
 function string get_verbose_opt (const bool verbose)
     string verbose_opt = ""
-    return (verbose==0) ? "--quiet" : verbose_opt
+    return (verbose == 0) ? "--quiet" : verbose_opt
 end function
 
 
@@ -378,5 +378,3 @@ function scalar xlist_member_isconst (const list X)
 
     return 0
 end function
-
-
