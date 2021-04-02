@@ -365,18 +365,18 @@ end function
 
 
 function scalar xlist_member_isconst (const list X)
-    /* Checks of any series of X is a constant. */
+    /* Checks of any series of X is a constant.
+    return: TRUE is any series is constant, otherwise FALSE. */
 
-    scalar ret = 0
     loop foreach i X -q
         if isconst(X.$i)
-            ret++
-            printf "\nError: pca_encode() does not work if any regressor is constant."
+            return 1
+            printf "\nError: pca_encode() does not work if any regressor is constant.\n"
             break
         endif
     endloop
 
-    return ret
+    return 0
 end function
 
 
