@@ -292,7 +292,7 @@ Version 0.4 (March 2021):
 - Clean up of internals
 - Avoid using "smpl" command by exploiting boolean mask operation instead.
 - Make formerly internal functions stats_by_group() and impose_by_group() public
-- Minimum version increased from 2018a to 2020a
+- Minimum version increased from 2018a to 2020b
 
 Version 0.31 (Jan. 2020):
 - Switch back from tall_svd() to built-in svd() as gretl version 2020b (and as

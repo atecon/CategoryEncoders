@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gretl-functions>
-<gretl-function-package name="CategoryEncoders" minver="2018a">
+<gretl-function-package name="CategoryEncoders" minver="2020b">
 <author email="atecon@posteo.de">Artur Tarassow</author>
 <version>0.4</version>
-<date>2021-04-02</date>
+<date>2021-04-03</date>
 <description>Encoder based on categorical variables</description>
 <tags>C10</tags>
 <help>
-*** CategoryEncoders ***
-
 A set of gretl transformers for encoding categorical variables into numeric
 with different techniques. Many econometric techniques and learning algorithms
 require categorical data to be transformed into real vectors before it can be
@@ -303,6 +301,7 @@ Version 0.4 (March 2021):
 - Clean up of internals
 - Avoid using &quot;smpl&quot; command by exploiting boolean mask operation instead.
 - Make formerly internal functions stats_by_group() and impose_by_group() public
+- Minimum version increased from 2018a to 2020b
 
 Version 0.31 (Jan. 2020):
 - Switch back from tall_svd() to built-in svd() as gretl version 2020b (and as
@@ -326,10 +325,10 @@ Version 0.2 (Sept. 2019):
   <param name="X" type="series" const="true">
 <description>Discrete series</description>
   </param>
-  <param name="drop" type="scalar" min="0" max="2" default="1" const="true">
+  <param name="drop" type="scalar" min="0" max="2" default="1">
 <description>0=drop none, 1=drop-first, 2=drop-last</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true">
+  <param name="verbose" type="bool" default="0">
 <description>Print details</description>
   </param>
  </params>
@@ -367,10 +366,10 @@ return R
 </gretl-function>
 <gretl-function name="binary_encode" type="list">
  <params count="3">
-  <param name="X" type="list" const="true">
+  <param name="X" type="list">
 <description>List of series</description>
   </param>
-  <param name="threshold" type="scalar" const="true">
+  <param name="threshold" type="scalar">
 <description>X[i] &lt;= threshold are set to 0, above it by 1.</description>
   </param>
   <param name="suffix" type="string" optional="true">
@@ -391,7 +390,7 @@ return R
 </gretl-function>
 <gretl-function name="median_encode" type="list">
  <params count="4">
-  <param name="X" type="list" const="true">
+  <param name="X" type="list">
 <description>List of series</description>
   </param>
   <param name="G" type="series" const="true">
@@ -400,7 +399,7 @@ return R
   <param name="suffix" type="string" optional="true">
 <description>Suffix for returned series name</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
  </params>
 <code>/* Group-wise median computation wrapper function. */
 scalar compute_median = 1
@@ -412,7 +411,7 @@ return means_or_median_encode(X, G, compute_median, suffix, verbose)
 </gretl-function>
 <gretl-function name="means_encode" type="list">
  <params count="4">
-  <param name="X" type="list" const="true">
+  <param name="X" type="list">
 <description>List of series</description>
   </param>
   <param name="G" type="series" const="true">
@@ -421,7 +420,7 @@ return means_or_median_encode(X, G, compute_median, suffix, verbose)
   <param name="suffix" type="string" optional="true">
 <description>Suffix for returned series name</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
  </params>
 <code>/* Group-wise mean computation wrapper function */
 scalar compute_median = 0
@@ -433,19 +432,19 @@ return means_or_median_encode(X, G, compute_median, suffix, verbose)
 </gretl-function>
 <gretl-function name="pca_encode" type="list">
  <params count="5">
-  <param name="X" type="list" const="true">
+  <param name="X" type="list">
 <description>Exogenous regressors</description>
   </param>
   <param name="G" type="series" const="true">
 <description>Holding group IDs</description>
   </param>
-  <param name="num_components" type="int" min="0" default="0" const="true">
+  <param name="num_components" type="int" min="0" default="0">
 <description>Retrieve only first n PCs</description>
   </param>
   <param name="suffix" type="string" optional="true">
 <description>Suffix for returned series name</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
  </params>
 <code>/* Principal components analysis. mean_encode() will be run automatically. */
 list Xmeans = null
@@ -492,13 +491,13 @@ return R
   <param name="G" type="series" const="true">
 <description>Holding group IDs</description>
   </param>
-  <param name="num_components" type="int" min="0" default="0" const="true">
+  <param name="num_components" type="int" min="0" default="0">
 <description>Retrieve only first n PCs</description>
   </param>
   <param name="suffix" type="string" optional="true">
 <description>Suffix for returned series name</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
  </params>
 <code>/* SVD based encoding. mean_encode() will be run automatically */
 list R = null
@@ -532,7 +531,7 @@ return R
 </gretl-function>
 <gretl-function name="mnl_encode" type="list">
  <params count="4">
-  <param name="X" type="list" const="true">
+  <param name="X" type="list">
 <description>Exogenous regressors</description>
   </param>
   <param name="G" type="series" const="true">
@@ -541,7 +540,7 @@ return R
   <param name="suffix" type="string" optional="true">
 <description>Suffix for returned series name</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
  </params>
 <code>/* Multinomial logistic regression. Requires also coefficients from
 reference category which are, however, not returned by gretl. */
@@ -592,7 +591,7 @@ return R
   <param name="operation" type="string" const="true">
 <description>E.g. 'mean', 'sd' etc.</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true"/>
+  <param name="verbose" type="bool" default="0"/>
  </params>
 <code>/* Function for grouping series X by G, computing group-wise
 statistics. Group-wise stats are imposed as values for constructing a series. 'operation' must be supported by the aggregate() function.
@@ -637,19 +636,19 @@ return R
 </gretl-function>
 <gretl-function name="means_or_median_encode" type="list" private="1">
  <params count="5">
-  <param name="X" type="list" const="true">
+  <param name="X" type="list">
 <description>List of series</description>
   </param>
   <param name="G" type="series" const="true">
 <description>Holding group IDs</description>
   </param>
-  <param name="use_median" type="bool" default="0" const="true">
+  <param name="use_median" type="bool" default="0">
 <description>Median instead of mean encoding</description>
   </param>
   <param name="suffix" type="string" const="true">
 <description>Suffix for returned series name</description>
   </param>
-  <param name="verbose" type="bool" default="0" const="true">
+  <param name="verbose" type="bool" default="0">
 <description>Print details</description>
   </param>
  </params>
@@ -684,8 +683,8 @@ return 1
 </gretl-function>
 <gretl-function name="check_num_components" type="scalar" private="1">
  <params count="2">
-  <param name="X" type="list" const="true"/>
-  <param name="num_components" type="int" min="0" const="true"/>
+  <param name="X" type="list"/>
+  <param name="num_components" type="int" min="0"/>
  </params>
 <code>/* Check that the number of components supposed to store does not
 exceed the number of list members.
@@ -699,7 +698,7 @@ return 1
 </gretl-function>
 <gretl-function name="xlist_has_at_least_two_members" type="scalar" private="1">
  <params count="1">
-  <param name="X" type="list" const="true"/>
+  <param name="X" type="list"/>
  </params>
 <code>/* Helper function checking number of elements in X.
 Return: 0 (FALSE) in case of an error, otherwise 1 (TRUE).*/
@@ -712,7 +711,7 @@ return 1
 </gretl-function>
 <gretl-function name="get_verbose_opt" type="string" private="1">
  <params count="1">
-  <param name="verbose" type="bool" const="true"/>
+  <param name="verbose" type="bool"/>
  </params>
 <code>string verbose_opt = &quot;&quot;
 return (verbose == 0) ? &quot;--quiet&quot; : verbose_opt
@@ -720,7 +719,7 @@ return (verbose == 0) ? &quot;--quiet&quot; : verbose_opt
 </gretl-function>
 <gretl-function name="xlist_member_isconst" type="scalar" private="1">
  <params count="1">
-  <param name="X" type="list" const="true"/>
+  <param name="X" type="list"/>
  </params>
 <code>/* Checks of any series of X is a constant.
 return: TRUE is any series is constant, otherwise FALSE. */
